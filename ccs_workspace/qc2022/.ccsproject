@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?ccsproject version="1.0"?>
+<projectOptions>
+	<ccsVersion value="11.2.0"/>
+	<deviceVariant value="MSP430FR2633"/>
+	<deviceFamily value="MSP430"/>
+	<deviceEndianness value="little"/>
+	<codegenToolVersion value="21.6.0.LTS"/>
+	<isElfFormat value="true"/>
+	<linkerCommandFile value="lnk_msp430fr2633.cmd"/>
+	<rts value="libc.a"/>
+	<createSlaveProjects value=""/>
+	<templateProperties value="id=qc2022.projectspec.qc2022"/>
+	<origin value="C:\Users\george\project\qc2022_badge\ccs_workspace\qc2022_badge\CCS\qc2022.projectspec"/>
+	<filesToOpen value=""/>
+</projectOptions>
