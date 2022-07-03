@@ -158,10 +158,10 @@ void init_timers() {
     next_channel_timer_init.timerClear = TIMER_A_SKIP_CLEAR;
     next_channel_timer_init.startTimer = false;
 
-    Timer_A_initUpMode(TIMER_A0_BASE, &next_channel_timer_init);
-    Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_UP_MODE);
+    // TIMER_A1_BASE is T1A3, which is what we want.
 
-    // TODO: Also create one for GSCLK
+    Timer_A_initUpMode(TIMER_A1_BASE, &next_channel_timer_init);
+    Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
 }
 
 /// Make snafucated.
@@ -171,7 +171,6 @@ int main(void) {
     init_clocks();
     init_io();
     init_timers();
-    BSP_configureMCU(); // TODO: get rid of this
 
     // TODO: Colors
 
@@ -193,6 +192,9 @@ int main(void) {
             // Service the LED animation timestep.
             // leds_timestep();
 
+            // TODO: Is this needed? Should it move?:
+            // tlc_set_gs();
+
             f_time_loop = 0;
         }
 
@@ -204,26 +206,23 @@ int main(void) {
     } // End background loop
 }
 
-// TODO: Handle the double-definition of the below:
+// NB: In the Timer ISRs, for historical reasons, the vectors are named
+//      in a confusing way.
+//
+// **** TL;DR: Timer A0 is TIMER0_A0_xxx; Timer A1 is TIMER1_A0_xxx.
+//
+//     This is, apparently, because originally devices only had a single
+//      Timer A, Timer B, etc. So, the CCR registers' index determined
+//      the major number: TIMER_A0 (Timer A, CCR0); TIMER_A1 (Timer A, CCR1),
+//      etc. But now, devices like this one have multiple Timer As. So,
+//      the naming convention must be Timer0_A... for Timer A0, and
+//      Timer1_A... for A1, etc.
+//     Anyway, that's why it looks like this.
 
-//
-//// NB: In the Timer ISRs, for historical reasons, the vectors are named
-////      in a confusing way.
-////
-//// **** TL;DR: Timer A0 is TIMER0_A0_xxx; Timer A1 is TIMER1_A0_xxx.
-////
-////     This is, apparently, because originally devices only had a single
-////      Timer A, Timer B, etc. So, the CCR registers' index determined
-////      the major number: TIMER_A0 (Timer A, CCR0); TIMER_A1 (Timer A, CCR1),
-////      etc. But now, devices like this one have multiple Timer As. So,
-////      the naming convention must be Timer0_A... for Timer A0, and
-////      Timer1_A... for A1, etc.
-////     Anyway, that's why it looks like this.
-//
-//// Dedicated ISR for Timer A0 CCR0. Vector is cleared on service.
-//#pragma vector=TIMER0_A0_VECTOR
-//__interrupt void TIMER0_A0_ISR_HOOK(void)
-//{
-//    f_time_loop = 1;
-//    LPM0_EXIT;
-//}
+// Dedicated ISR for T1A3 CCR0. Vector is cleared on service.
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt void TIMER1_A3_ISR_HOOK(void)
+{
+    f_time_loop = 1;
+    LPM0_EXIT;
+}

@@ -22,7 +22,7 @@
  *        LAT       P1.4
  *
  *   This file's job is to keep the display going. Application logic will go
- *   elsewhere - this is strictly a driver for our 6 banks and 15 channels.
+ *   elsewhere - this is strictly a driver.
  *
  */
 
@@ -40,17 +40,8 @@ uint8_t tlc_tx_index = 0;   // Index of currently sending buffer
 uint8_t tlc_loopback_data_out = 0x00;
 volatile uint8_t tlc_loopback_data_in = 0x00;
 
-uint8_t tlc_active_bank = 0;
-
 // Let's make these 12-bit. So the most significant hexadigit will be brightness-correct.
-uint16_t tlc_bank_gs[6][16] = {
-    {0},
-    {0},
-    {0},
-    {0},
-    {0},
-    {0},
-};
+uint16_t tlc_gs_data[16] = {0,};
 
 // This is the basic set of function data.
 // A few of them can be edited.
@@ -142,7 +133,6 @@ void tlc_stage_bc(uint8_t bc) {
 
 void tlc_init() {
 	// Initialize all the TLC GPIO:
-	// 6x banks
 	// GSCLK
 	// LAT
 	// SCLK, tx, rx
@@ -151,9 +141,6 @@ void tlc_init() {
     P1OUT &= ~BIT4;
 
     tlc_stage_blank(1);
-
-    // GS_CLK:
-    GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P1, GPIO_PIN2, GPIO_PRIMARY_MODULE_FUNCTION); // 1.2 TA1.1
 
     // Set up USCI_A0 GPIO:
     //1.5 SCLK
@@ -169,6 +156,9 @@ void tlc_init() {
     //  Below this is configured to toggle every cycle of SMCLK,
     //  which should always be our fastest clock.
 
+    // TODO: Register based
+    // We're going to use T0A3 for this.
+
     Timer_A_initUpModeParam gsclk_init = {};
     gsclk_init.clockSource = TIMER_A_CLOCKSOURCE_SMCLK;
     gsclk_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_1;
@@ -178,30 +168,12 @@ void tlc_init() {
     gsclk_init.timerClear = TIMER_A_SKIP_CLEAR;
     gsclk_init.startTimer = false;
 
-    // Next we configure the clock that tells us when it's time to select the
-    //  next LED channel bank.
-    // We'll run this off of ACLK, which is driven by our internal 39K clock.
-    //  THIS IS OUR TIME LOOP!!!! :-D
-
-    Timer_A_initUpModeParam next_channel_timer_init = {};
-    next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
-    next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_28;
-    next_channel_timer_init.timerPeriod = 2;
-    next_channel_timer_init.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
-    next_channel_timer_init.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
-    next_channel_timer_init.timerClear = TIMER_A_SKIP_CLEAR;
-    next_channel_timer_init.startTimer = false;
-
-    // Start the clocks:
+    // Start the clock:
 
     // A1 / GSCLK:
-    Timer_A_initUpMode(TIMER_A1_BASE, &gsclk_init);
-    Timer_A_setOutputMode(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1, TIMER_A_OUTPUTMODE_TOGGLE_RESET);
-    Timer_A_setCompareValue(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1, 1);
-    Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
-
-    // A0 / LED channel timer:
-    Timer_A_initUpMode(TIMER_A0_BASE, &next_channel_timer_init);
+    Timer_A_initUpMode(TIMER_A0_BASE, &gsclk_init);
+    Timer_A_setOutputMode(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1, TIMER_A_OUTPUTMODE_TOGGLE_RESET);
+    Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1, 1);
     Timer_A_startCounter(TIMER_A0_BASE, TIMER_A_UP_MODE);
 
     UCA0CTLW0 |= UCSWRST;  // Shut down USCI_A0,
@@ -245,43 +217,12 @@ __interrupt void EUSCI_A0_ISR(void)
     case 4: // Vector 4 - TXIFG : I just sent a byte.
         if (tlc_send_type == TLC_SEND_TYPE_GS) {
             if (tlc_tx_index == 32) { // done
-                // TODO: get rid of the LED bank stuff:
-//                LED_BANK1_OUT |= LED_BANK1_PIN | LED_BANK2_PIN | LED_BANK3_PIN
-//                        | LED_BANK4_PIN;
-//                LED_BANK5_OUT |= LED_BANK5_PIN | LED_BANK6_PIN;
-                P1OUT |= BIT4; P1OUT &= ~BIT4; // Pulse LAT // TODO
+                P1OUT |= BIT7; P1OUT &= ~BIT7; // Pulse LAT
                 tlc_send_type = TLC_SEND_IDLE;
-
-//                switch (tlc_active_bank) {
-//                case 0:
-//                    LED_BANK1_OUT &= ~LED_BANK1_PIN;
-//                    tlc_active_bank++;
-//                    break;
-//                case 1:
-//                    LED_BANK2_OUT &= ~LED_BANK2_PIN;
-//                    tlc_active_bank++;
-//                    break;
-//                case 2:
-//                    LED_BANK3_OUT &= ~LED_BANK3_PIN;
-//                    tlc_active_bank++;
-//                    break;
-//                case 3:
-//                    LED_BANK4_OUT &= ~LED_BANK4_PIN;
-//                    tlc_active_bank++;
-//                    break;
-//                case 4:
-//                    LED_BANK5_OUT &= ~LED_BANK5_PIN;
-//                    tlc_active_bank++;
-//                    break;
-//                case 5:
-//                    LED_BANK6_OUT &= ~LED_BANK6_PIN;
-//                    tlc_active_bank = 0;
-//                    break;
-//                }
                 break;
             } else { // gs - MSB first; this starts with 0.
                 volatile static uint16_t channel_gs = 0;
-                channel_gs = (tlc_bank_gs[tlc_active_bank][tlc_tx_index>>1]);
+                channel_gs = (tlc_gs_data[tlc_tx_index>>1]);
                 if (tlc_tx_index & 0x01) { // odd; less significant byte
                     UCA0TXBUF = (channel_gs & 0xff);
                 } else { // even; more significant byte
@@ -321,14 +262,4 @@ __interrupt void EUSCI_A0_ISR(void)
         break; // End of TXIFG /////////////////////////////////////////////////////
     default: break;
     } // End of ISR flag switch ////////////////////////////////////////////////////
-}
-
-// Dedicated ISR for CCR0. Vector is cleared on service.
-#pragma vector=TIMER0_A0_VECTOR
-__interrupt void TIMER0_A0_ISR_HOOK(void)
-{
-    // TODO:
-    f_time_loop = 1;
-    tlc_set_gs();
-    __bic_SR_register_on_exit(LPM0_bits);
 }
