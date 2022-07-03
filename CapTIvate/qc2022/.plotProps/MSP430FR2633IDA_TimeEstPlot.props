@@ -1,5 +1,5 @@
 #C:\Users\george\project\qc2022_badge\CapTIvate\qc2022/.plotProps/MSP430FR2633IDA_TimeEstPlot.props Plotter Data
-#Fri Jun 24 14:08:59 CDT 2022
+#Sun Jul 03 12:09:47 CDT 2022
 --Scan\ Period--=on
 Signal.alias.BTN01_EYE=0.270ms
 xlabel=Time
