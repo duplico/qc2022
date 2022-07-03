@@ -96,7 +96,7 @@ void init_io() {
     // P1.0     Unused
     // P1.1     TA0.1       TODO
     // P1.2     Unused
-    // P1.3     unused      (SEL 00; DIR 1)
+    // P1.3     unused
     // P1.4     UCA0 SIMO   (SEL 01; DIR 1)
     // P1.5     UCA0 SOMI   (SEL 01; DIR 0)
     // P1.6     UCA0 SCLK   (SEL 01; DIR 1)
@@ -163,16 +163,14 @@ void init_timers() {
 
 /// Make snafucated.
 int main(void) {
-    WDTCTL = WDTPW | WDTHOLD;
+    WDTCTL = WDTPW | WDTHOLD; // Hold WDT.
 
     init_clocks();
     init_io();
     init_timers();
     BSP_configureMCU(); // TODO: get rid of this
 
-//    ht16d_init();
-
-//    ht16d_all_one_color(255, 255, 255);
+    // TODO: Colors
 
     __bis_SR_register(GIE);
 
