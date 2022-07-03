@@ -54,6 +54,8 @@
 
 #include "CAPT_BSP.h"
 
+// TODO: Delete this file.
+
 //*****************************************************************************
 //
 //! This function is configures the MCU Digital IO and CS for operation.
