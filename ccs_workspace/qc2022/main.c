@@ -203,23 +203,26 @@ int main(void) {
     } // End background loop
 }
 
-// NB: In the Timer ISRs, for historical reasons, the vectors are named
-//      in a confusing way.
-//
-// **** TL;DR: Timer A0 is TIMER0_A0_xxx; Timer A1 is TIMER1_A0_xxx.
-//
-//     This is, apparently, because originally devices only had a single
-//      Timer A, Timer B, etc. So, the CCR registers' index determined
-//      the major number: TIMER_A0 (Timer A, CCR0); TIMER_A1 (Timer A, CCR1),
-//      etc. But now, devices like this one have multiple Timer As. So,
-//      the naming convention must be Timer0_A... for Timer A0, and
-//      Timer1_A... for A1, etc.
-//     Anyway, that's why it looks like this.
+// TODO: Handle the double-definition of the below:
 
-// Dedicated ISR for Timer A0 CCR0. Vector is cleared on service.
-#pragma vector=TIMER0_A0_VECTOR
-__interrupt void TIMER0_A0_ISR_HOOK(void)
-{
-    f_time_loop = 1;
-    LPM0_EXIT;
-}
+//
+//// NB: In the Timer ISRs, for historical reasons, the vectors are named
+////      in a confusing way.
+////
+//// **** TL;DR: Timer A0 is TIMER0_A0_xxx; Timer A1 is TIMER1_A0_xxx.
+////
+////     This is, apparently, because originally devices only had a single
+////      Timer A, Timer B, etc. So, the CCR registers' index determined
+////      the major number: TIMER_A0 (Timer A, CCR0); TIMER_A1 (Timer A, CCR1),
+////      etc. But now, devices like this one have multiple Timer As. So,
+////      the naming convention must be Timer0_A... for Timer A0, and
+////      Timer1_A... for A1, etc.
+////     Anyway, that's why it looks like this.
+//
+//// Dedicated ISR for Timer A0 CCR0. Vector is cleared on service.
+//#pragma vector=TIMER0_A0_VECTOR
+//__interrupt void TIMER0_A0_ISR_HOOK(void)
+//{
+//    f_time_loop = 1;
+//    LPM0_EXIT;
+//}
