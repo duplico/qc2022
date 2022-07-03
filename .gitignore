@@ -228,3 +228,5 @@ ccs_workspace/qc2022/Debug/driverlib/MSP430FR2xx_4xx/libraries/subdir_vars.mk
 ccs_workspace/qc2022/Debug/mathlib/libraries/subdir_rules.mk
 ccs_workspace/qc2022/Debug/mathlib/libraries/subdir_vars.mk
 ccs_workspace/RemoteSystemsTempFiles/.project
+ccs_workspace/qc2022/Debug/tlc5948a.d
+ccs_workspace/qc2022/Debug/tlc5948a.obj
