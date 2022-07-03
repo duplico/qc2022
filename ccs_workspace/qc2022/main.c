@@ -93,38 +93,41 @@ void init_io() {
     // Per datasheet S4.6, p20, unused pins should be switched to outputs.
 
     // IO:
-    // P1.0     Unused
-    // P1.1     TA0.1       TODO
-    // P1.2     Unused
-    // P1.3     unused
+    // P1.0     Unused      (SEL 00; DIR 1)
+    // P1.1     TA0.1       (SEL 10; DIR 1)
+    // P1.2     Unused      (SEL 00; DIR 1)
+    // P1.3     Unused      (SEL 00; DIR 1)
     // P1.4     UCA0 SIMO   (SEL 01; DIR 1)
     // P1.5     UCA0 SOMI   (SEL 01; DIR 0)
     // P1.6     UCA0 SCLK   (SEL 01; DIR 1)
     // P1.7     GPIO LAT    (SEL 00; DIR 1)
 
-    // P2.0     Unused
-    // P2.1     Unused
-    // P2.2     Unused
-    // P2.3     Unused
-    // P2.4     GPIO O_HAI  (SEL: 00; DIR: 0; REN: 1; OUT 1)
-    // P2.5     UCA1 RX     (SEL: 01; DIR: 0)
-    // P2.6     UCA1 TX     (SEL: 01; DIR: 1)
-    // P2.7     Unused
+    // P2.0     Unused      (SEL 00; DIR 1)
+    // P2.1     Unused      (SEL 00; DIR 1)
+    // P2.2     Unused      (SEL 00; DIR 1)
+    // P2.3     Unused      (SEL 00; DIR 1)
+    // P2.4     GPIO O_HAI  (SEL 00; DIR 0; REN 1; OUT 1)
+    // P2.5     UCA1 RX     (SEL 01; DIR 0)
+    // P2.6     UCA1 TX     (SEL 01; DIR 1)
+    // P2.7     Unused      (SEL 00; DIR 1)
 
-    // TODO: Configure the below:
+    // P3.0 is DONTCARE for CAP0.0
+    // P3.1     Unused      (SEL 00; DIR 1)
+    // P3.2     Unused      (SEL 00; DIR 1)
 
     // P1
-    P1DIR = 0b11011011;
-    P1SEL0 = 0b00110110; // LSB
-    P1SEL1 = 0b00000000; // MSB
-    P1REN = 0x00;
-    P1OUT = 0b00000001;
+    P1DIR =     0b11011111;
+    P1SEL0 =    0b01110000; // LSB
+    P1SEL1 =    0b00000010; // MSB
+    P1REN =     0x00;
+    P1OUT =     0x00;
 
     // P2
-    P2DIR = 0xFF;
-    P2SEL0 = 0x00;
-    P2SEL1 = 0x00;
-    P2OUT = 0x00;
+    P2DIR =     0b11001111;
+    P2SEL0 =    0b01100000; // LSB
+    P2SEL1 =    0b00000000; // MSB
+    P1REN =     0b00010000;
+    P2OUT =     0b00010000;
 
 
     // Init P3 as unused
