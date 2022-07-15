@@ -13,4 +13,6 @@
 	<templateProperties value="id=qc2022.projectspec.qc2022"/>
 	<origin value="C:\Users\george\project\qc2022_badge\ccs_workspace\qc2022_badge\CCS\qc2022.projectspec"/>
 	<filesToOpen value=""/>
+	<connection value="common/targetdb/connections/TIMSP430-USB.xml"/>
+	<isTargetManual value="false"/>
 </projectOptions>

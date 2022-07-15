@@ -18,6 +18,7 @@
 // Local headers
 #include "CAPT_App.h"
 #include "CAPT_BSP.h"
+#include "tlc5948a.h"
 
 // Interrupt flags
 volatile uint8_t f_time_loop = 0;
@@ -94,7 +95,7 @@ void init_io() {
 
     // IO:
     // P1.0     Unused      (SEL 00; DIR 1)
-    // P1.1     TA0.1       (SEL 10; DIR 1)
+    // P1.1     TA0.1       (SEL 10; DIR 1) // TODO: fix
     // P1.2     Unused      (SEL 00; DIR 1)
     // P1.3     Unused      (SEL 00; DIR 1)
     // P1.4     UCA0 SIMO   (SEL 01; DIR 1)
@@ -118,7 +119,7 @@ void init_io() {
     // P1
     P1DIR =     0b11011111;
     P1SEL0 =    0b01110000; // LSB
-    P1SEL1 =    0b00000010; // MSB
+    P1SEL1 =    0b00000000; // MSB // TODO: fix
     P1REN =     0x00;
     P1OUT =     0x00;
 
@@ -151,7 +152,7 @@ void init_timers() {
     // TODO: Rename
     Timer_A_initUpModeParam next_channel_timer_init = {};
     next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
-    next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_64;
+    next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;
     next_channel_timer_init.timerPeriod = 8;
     next_channel_timer_init.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
     next_channel_timer_init.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
@@ -166,15 +167,21 @@ void init_timers() {
 
 /// Make snafucated.
 int main(void) {
+    // TODO: Check what's happening with LAT
+    // TODO: Check what's happening with GSCLK
+
+
     WDTCTL = WDTPW | WDTHOLD; // Hold WDT.
 
     init_clocks();
     init_io();
     init_timers();
 
-    // TODO: Colors
-
     __bis_SR_register(GIE);
+
+    tlc_init();
+
+    // TODO: Colors
 
     CAPT_appStart();
 
@@ -193,7 +200,7 @@ int main(void) {
             // leds_timestep();
 
             // TODO: Is this needed? Should it move?:
-            // tlc_set_gs();
+             tlc_set_gs();
 
             f_time_loop = 0;
         }
