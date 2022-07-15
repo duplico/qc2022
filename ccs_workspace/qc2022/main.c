@@ -95,7 +95,7 @@ void init_io() {
 
     // IO:
     // P1.0     Unused      (SEL 00; DIR 1)
-    // P1.1     TA0.1       (SEL 10; DIR 1) // TODO: fix
+    // P1.1     TA0.1       (SEL 10; DIR 1)
     // P1.2     Unused      (SEL 00; DIR 1)
     // P1.3     Unused      (SEL 00; DIR 1)
     // P1.4     UCA0 SIMO   (SEL 01; DIR 1)
@@ -119,7 +119,7 @@ void init_io() {
     // P1
     P1DIR =     0b11011111;
     P1SEL0 =    0b01110000; // LSB
-    P1SEL1 =    0b00000000; // MSB // TODO: fix
+    P1SEL1 =    0b00000010; // MSB
     P1REN =     0x00;
     P1OUT =     0x00;
 
@@ -167,10 +167,6 @@ void init_timers() {
 
 /// Make snafucated.
 int main(void) {
-    // TODO: Check what's happening with LAT
-    // TODO: Check what's happening with GSCLK
-
-
     WDTCTL = WDTPW | WDTHOLD; // Hold WDT.
 
     init_clocks();
@@ -199,13 +195,11 @@ int main(void) {
             // Service the LED animation timestep.
             // leds_timestep();
 
-            // TODO: Is this needed? Should it move?:
-             tlc_set_gs();
-
             f_time_loop = 0;
         }
 
         if(CAPT_appHandler()==true) {
+            // TODO: What happened exactly?
             __no_operation();
         }
 
