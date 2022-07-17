@@ -36,7 +36,7 @@ uint8_t tlc_tx_index = 0;   // Index of currently sending buffer
 uint8_t tlc_loopback_data_out = 0x00;
 volatile uint8_t tlc_loopback_data_in = 0x00;
 
-uint16_t tlc_gs_data[16] = { 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, };
+uint16_t tlc_gs_data[16] = { 0x0000, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, };
 
 // This is the basic set of function data.
 // A few of them can be edited.
@@ -63,12 +63,16 @@ uint8_t fun_base[] = {
         // B120 / DSPRPT        1: (byte 16)
         0b10000101,
         // B119 / BLANK
-        // and 7 bits of global brightness correction: (byte 17)
-        0x7f,
+        // and 7 bits of global brightness control: (byte 17)
+        TLC_BC,
         // HERE WE SWITCH TO 7-BIT SPI.
         // The following index is 18: // TODO: dot correct here:
-        0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F,
-        0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F,
+        0x7F,
+        TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
+        TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
+        TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
+        TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
+        TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
 };
 
 void tlc_set_gs() {
