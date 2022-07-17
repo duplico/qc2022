@@ -18,7 +18,9 @@
 // Local headers
 #include "CAPT_App.h"
 #include "CAPT_BSP.h"
+
 #include "tlc5948a.h"
+#include "rtc.h"
 
 // Interrupt flags
 volatile uint8_t f_time_loop = 0;
@@ -82,6 +84,8 @@ void init_clocks() {
     //  Derived from MCLK with divider up to /8
     //  Set to MCLK/1 = 8 MHz
     // DIVS__1;
+
+    // ACLK (32k) configured to REFO per default
 
     CSCTL5 = VLOAUTOOFF | DIVS__1 | DIVM__2;
 }
@@ -169,15 +173,17 @@ void init_timers() {
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // Hold WDT.
 
+    // Configure board basics:
     init_clocks();
     init_io();
     init_timers();
 
+    // Enable interrupts.
     __bis_SR_register(GIE);
 
+    // Configure mid-level drivers.
+    rtc_init();
     tlc_init();
-
-    // TODO: Colors
 
     CAPT_appStart();
 
