@@ -21,6 +21,15 @@
 
 #include "tlc5948a.h"
 #include "rtc.h"
+#include "badge.h"
+
+// Global configuration
+badge_conf_t badge_conf = (badge_conf_t){
+    .badge_id = BADGE_ID_UNASSIGNED,
+    .initialized = 0,
+    .in_service = 0,
+    .badges_seen = {0,},
+};
 
 // Interrupt flags
 volatile uint8_t f_time_loop = 0;
