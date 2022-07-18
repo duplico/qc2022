@@ -25,6 +25,7 @@
 #include "rtc.h"
 #include "serial.h"
 #include "badge.h"
+#include "band_anims.h"
 
 // Global configuration
 badge_conf_t badge_conf = (badge_conf_t){
@@ -36,8 +37,12 @@ badge_conf_t badge_conf = (badge_conf_t){
     .current_anim_id = 4,
 };
 
+// Global state
+uint8_t button_state;
+
 // Interrupt flags
-volatile uint8_t f_time_loop = 0;
+volatile uint8_t f_time_loop;
+volatile uint8_t f_long_press;
 
 /// Initialize clock signals and the three system clocks.
 /**
@@ -183,16 +188,35 @@ void init_timers() {
     Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
 }
 
+uint8_t anim_unlocked(uint8_t id) {
+    return 1;
+}
+
+void next_animation() {
+    uint8_t candidate = badge_conf.current_anim_id;
+
+    do {
+        candidate +=1;
+        if (candidate == HEAD_ANIM_COUNT)
+            candidate = 0;
+    } while (!anim_unlocked(candidate));
+
+    badge_conf.current_anim_id = candidate;
+    leds_start_anim_by_id(candidate, 0, 1);
+}
+
 void button_cb(tSensor *pSensor) {
     if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
     {
         // Button press
-        __no_operation();
+        button_state = 1;
+        next_animation();
     }
 
     if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch == true))
     {
         // Button release
+        button_state = 0;
         __no_operation();
     }
 }
@@ -248,6 +272,10 @@ int main(void) {
         if (f_serial_phy) {
             serial_phy_handle_rx();
             f_serial_phy = 0;
+        }
+
+        if (f_long_press) {
+            f_long_press = 0;
         }
 
         // Check whether CapTIvate needs to be serviced.
