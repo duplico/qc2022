@@ -13,7 +13,6 @@
 
 extern uint8_t button_state;
 
-// TODO: Persistent?
 uint32_t rtc_seconds = 0;
 
 /// Initialize the on-board real-time clock to tick once per second.

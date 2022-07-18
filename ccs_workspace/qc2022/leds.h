@@ -10,8 +10,8 @@
 
 #include <stdint.h>
 
-#define LED_COUNT 4 //TODO: 5
-#define LEGS_DUR_STEP 14 // TODO: rename
+#define LED_COUNT 4
+#define LEGS_DUR_STEP 14
 
 #define BAND_TWINKLE_STEPS_FAST 100
 #define BAND_TWINKLE_STEPS_SLOW 400

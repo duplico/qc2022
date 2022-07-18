@@ -66,7 +66,7 @@ uint8_t fun_base[] = {
         // and 7 bits of global brightness control: (byte 17)
         TLC_BC,
         // HERE WE SWITCH TO 7-BIT SPI.
-        // The following index is 18: // TODO: dot correct here:
+        // The following index is 18:
         0x7F,
         TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
         TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
@@ -135,7 +135,6 @@ void tlc_init() {
     LAT_POUT &= ~LAT_PBIT;
 
     // Configure our SPI peripheral to talk to the LED controller.
-    // TODO: Redo USCI_A0 with registers, not driverlib:
     UCA0CTLW0 |= UCSWRST;  // Shut down USCI_A0,
 
     // And USCI_A0 peripheral:
@@ -155,11 +154,6 @@ void tlc_init() {
     EUSCI_A_SPI_clearInterrupt(EUSCI_A0_BASE, EUSCI_A_SPI_TRANSMIT_INTERRUPT);
     EUSCI_A_SPI_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_SPI_TRANSMIT_INTERRUPT);
 
-    // TODO: do something with this:
-//    volatile uint8_t loopback_test = 0;
-//    loopback_test = tlc_test_loopback(0b11011000);
-//    __no_operation();
-
     // Stage an un-blank configuration to the function data:
     tlc_stage_blank(0);
 
@@ -177,7 +171,7 @@ void tlc_init() {
 
     TA0CTL = MC__STOP; // Make sure the timer is stopped.
     TA0CCR0 = 1; // Reset timer at 1
-    TA0CCTL1 = OUTMOD_7; // Reset/Set mode. TODO: Is this the right mode? (See slau445i p376)
+    TA0CCTL1 = OUTMOD_7; // Reset/Set mode.
     TA0CCR1 = 1; // Toggle our output at 1
     TA0CTL = TASSEL__SMCLK|MC_1; // Start it in up mode based on an undivided SMCLK.
 }

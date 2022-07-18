@@ -22,7 +22,6 @@ badge_conf_t badge_conf = (badge_conf_t){
 };
 
 uint8_t anim_unlocked(uint8_t id) {
-    // TODO
     return 1;
 }
 

@@ -17,7 +17,6 @@
 #include "band_anims.h"
 
 /*
- * TODO: how is this wired up?
  * The LED order is RIGHT TO LEFT. So, gs[0] is the rightmost LED,
  *  gs[3] is the leftmost, and gs[4] is the HEART!
  */
@@ -78,7 +77,7 @@ void leds_load_colors() {
     // leg_colors_curr <- tentacle_current_anim[tentacle_anim_index]
 
     // Stage in the current color:
-    for (uint8_t i=0; i<LED_COUNT; i++) { // TODO: what's up with the multiplication?
+    for (uint8_t i=0; i<LED_COUNT; i++) {
         band_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red * 5;
         band_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green * 5;
         band_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue * 5;
