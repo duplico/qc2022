@@ -142,7 +142,7 @@ void init_io() {
     P2DIR =     0b11001111;
     P2SEL0 =    0b01100000; // LSB
     P2SEL1 =    0b00000000; // MSB
-    P1REN =     0b00010000;
+    P2REN =     0b00010000;
     P2OUT =     0b00010000;
 
 
@@ -197,7 +197,7 @@ int main(void) {
     tlc_init();
     serial_init();
 
-    CAPT_appStart();
+//    CAPT_appStart();
 
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
 
@@ -220,14 +220,15 @@ int main(void) {
 
         if (f_serial_phy) {
             serial_phy_handle_rx();
+            f_serial_phy = 0;
         }
 
-        if(CAPT_appHandler()==true) {
-            // TODO: What happened exactly?
-            __no_operation();
-        }
-
-        CAPT_appSleep();
+//        if(CAPT_appHandler()==true) {
+//            // TODO: What happened exactly?
+//            __no_operation();
+//        }
+//
+//        CAPT_appSleep();
     } // End background loop
 }
 
