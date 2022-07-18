@@ -38,6 +38,7 @@ typedef struct {
     /// The currently selected element on this badge
 //    element_type element_selected;
     uint8_t badges_seen[32];
+    uint8_t current_anim_id;
 } badge_conf_t;
 
 // Global-ish variables:

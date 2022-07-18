@@ -20,6 +20,7 @@
 #include "CAPT_BSP.h"
 
 #include "tlc5948a.h"
+#include "leds.h"
 #include "rtc.h"
 #include "serial.h"
 #include "badge.h"
@@ -31,6 +32,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .in_service = 0,
     .clock_authority = 0,
     .badges_seen = {0,},
+    .current_anim_id = 4,
 };
 
 // Interrupt flags
@@ -168,7 +170,7 @@ void init_timers() {
     Timer_A_initUpModeParam next_channel_timer_init = {};
     next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
     next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;
-    next_channel_timer_init.timerPeriod = 8;
+    next_channel_timer_init.timerPeriod = 32;
     next_channel_timer_init.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
     next_channel_timer_init.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
     next_channel_timer_init.timerClear = TIMER_A_SKIP_CLEAR;
@@ -197,6 +199,8 @@ int main(void) {
     tlc_init();
     serial_init();
 
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
+
     CAPT_appStart();
 
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
@@ -209,10 +213,8 @@ int main(void) {
             // First off, pat the dog.
             WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
 
-            // TODO:
             // Service the LED animation timestep.
-            // leds_timestep();
-
+            leds_timestep();
             serial_tick();
 
             f_time_loop = 0;

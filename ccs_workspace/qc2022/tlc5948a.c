@@ -36,7 +36,7 @@ uint8_t tlc_tx_index = 0;   // Index of currently sending buffer
 uint8_t tlc_loopback_data_out = 0x00;
 volatile uint8_t tlc_loopback_data_in = 0x00;
 
-uint16_t tlc_gs_data[16] = { 0x0000, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, 0x0fff, };
+uint16_t tlc_gs_data[16] = { 0x0000, };
 
 // This is the basic set of function data.
 // A few of them can be edited.
