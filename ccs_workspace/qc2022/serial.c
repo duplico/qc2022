@@ -192,7 +192,7 @@ void serial_ll_handle_rx() {
         // Expecting a SETID (handled here) or physical connection (handled elsewhere).
         if (serial_message_in.opcode == SERIAL_OPCODE_SETID) {
             // Set ID, send ACK, and stay idle:
-            badge_conf.badge_id = (uint8_t) (0xff & serial_message_in.payload);
+            badge_set_id((uint8_t) (0xff & serial_message_in.payload));
             serial_ll_rx_seq = badge_conf.badge_id;
             serial_send_start(SERIAL_OPCODE_ACK);
         }

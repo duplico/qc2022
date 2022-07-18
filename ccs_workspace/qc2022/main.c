@@ -27,16 +27,6 @@
 #include "badge.h"
 #include "band_anims.h"
 
-// Global configuration
-badge_conf_t badge_conf = (badge_conf_t){
-    .badge_id = BADGE_ID_UNASSIGNED,
-    .initialized = 0,
-    .in_service = 0,
-    .clock_authority = 0,
-    .badges_seen = {0,},
-    .current_anim_id = 4,
-};
-
 // Global state
 uint8_t button_state;
 
@@ -186,23 +176,6 @@ void init_timers() {
 
     Timer_A_initUpMode(TIMER_A1_BASE, &next_channel_timer_init);
     Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
-}
-
-uint8_t anim_unlocked(uint8_t id) {
-    return 1;
-}
-
-void next_animation() {
-    uint8_t candidate = badge_conf.current_anim_id;
-
-    do {
-        candidate +=1;
-        if (candidate == HEAD_ANIM_COUNT)
-            candidate = 0;
-    } while (!anim_unlocked(candidate));
-
-    badge_conf.current_anim_id = candidate;
-    leds_start_anim_by_id(candidate, 0, 1);
 }
 
 void button_cb(tSensor *pSensor) {
