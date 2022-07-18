@@ -21,6 +21,7 @@
 
 #include "tlc5948a.h"
 #include "rtc.h"
+#include "serial.h"
 #include "badge.h"
 
 // Global configuration
@@ -28,6 +29,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .badge_id = BADGE_ID_UNASSIGNED,
     .initialized = 0,
     .in_service = 0,
+    .clock_authority = 0,
     .badges_seen = {0,},
 };
 
@@ -193,6 +195,7 @@ int main(void) {
     // Configure mid-level drivers.
     rtc_init();
     tlc_init();
+    serial_init();
 
     CAPT_appStart();
 
@@ -210,7 +213,13 @@ int main(void) {
             // Service the LED animation timestep.
             // leds_timestep();
 
+            serial_tick();
+
             f_time_loop = 0;
+        }
+
+        if (f_serial_phy) {
+            serial_phy_handle_rx();
         }
 
         if(CAPT_appHandler()==true) {

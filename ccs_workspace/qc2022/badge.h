@@ -33,6 +33,8 @@ typedef struct {
     uint8_t initialized;
     /// Whether the badge has been assigned an ID or is otherwise "in use"
     uint8_t in_service;
+    /// Whether this badge thinks it has an authoritative clock:
+    uint8_t clock_authority;
     /// The currently selected element on this badge
 //    element_type element_selected;
     uint8_t badges_seen[32];

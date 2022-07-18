@@ -19,18 +19,21 @@
 #define SERIAL_RX_DONE 1
 
 // Serial LL (link-layer) state machine states:
-#define SERIAL_LL_STATE_NC_PRX 0
-#define SERIAL_LL_STATE_NC_PTX 1
-#define SERIAL_LL_STATE_C_IDLE 2
-#define SERIAL_LL_STATE_C_PAIRING 5
-#define SERIAL_LL_STATE_C_PAIRED 6
+#define SERIAL_LL_STATE_IDLE 0
+#define SERIAL_LL_STATE_NC1 1
+#define SERIAL_LL_STATE_NC2 2
+#define SERIAL_LL_STATE_C 3
+#define SERIAL_LL_STATE_BLOCK 4
 
 // Serial PHY states and configuration:
 #define SERIAL_PHY_STATE_IDLE 0
 #define SERIAL_PHY_STATE_RX 1
 #define SERIAL_PHY_STATE_TX 2
 
-#define SERIAL_PHY_TIMEOUT_TICKS 50 // TODO
+#define SERIAL_IDLE_TIMEOUT_TICKS 50
+#define SERIAL_NC_TIMEOUT_TICKS 10
+#define SERIAL_C_TIMEOUT_TICKS 10
+#define SERIAL_BLOCK_TIMEOUT_TICKS 500
 
 // Types and structs
 typedef struct {
@@ -44,19 +47,19 @@ typedef struct {
 } serial_message_t;
 
 // Variables
+extern volatile uint8_t f_serial_phy;
+
 extern volatile uint8_t serial_phy_state;
-extern volatile uint8_t serial_phy_timeout_counter;
 extern volatile serial_message_t serial_message_in;
 extern serial_message_t serial_message_out;
-extern uint8_t serial_phy_mode_ptx;
 extern uint8_t serial_ll_state;
 extern uint16_t connected_badge_id;
 extern uint8_t connected_badge_type;
 
 // Functions
-void serial_ll_tick();
+void serial_tick();
 void serial_phy_handle_rx();
-void init_serial();
+void serial_init();
 uint16_t crc16_buf(volatile uint8_t *sbuf, uint8_t len);
 uint16_t crc_build(uint8_t data, uint8_t start_over);
 void crc16_apply(serial_message_t *message);

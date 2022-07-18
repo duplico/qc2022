@@ -20,7 +20,6 @@ volatile uint8_t serial_phy_state_rx; // 0-init is fine.
 volatile uint8_t serial_phy_state_tx; // 0-init is fine.
 volatile uint8_t serial_phy_index_rx; // Initialized in ISR.
 volatile uint8_t serial_phy_index_tx; // Initialized in ISR.
-volatile uint8_t serial_phy_timeout_counter; // 0-init is fine.
 
 volatile uint8_t f_serial_phy = 0;
 
@@ -76,7 +75,11 @@ uint8_t validate_message(serial_message_t *message) {
         return 0;
     }
 
-    // TODO: Check from address is valid
+    // Check that the from-address is valid
+    if (message->from_id != CONTROLLER_ID && message->from_id >= BADGES_IN_SYSTEM) {
+        // (highest valid badge ID is BADGES_IN_SYSTEM-1)
+        return 0;
+    }
 
     // Opcode-specific validation:
     switch(message->opcode) {
@@ -99,68 +102,90 @@ uint8_t validate_message(serial_message_t *message) {
 }
 
 /// Send a message, applying the payload, len, crc, and from-ID.
-void serial_send_start(uint8_t opcode, uint8_t payload_len) {
+void serial_send_start(uint8_t opcode) {
     // Block until the PHY is idle.
     while (serial_phy_state_tx != SERIAL_PHY_STATE_IDLE);
+
+    // Set up the opcode and payload based on the opcode:
     serial_message_out.opcode = opcode;
-//    serial_message_out.clock_is_set; // TODO
+    switch(opcode) {
+    case SERIAL_OPCODE_ACK:
+        serial_message_out.payload = serial_ll_rx_seq;
+        break;
+    case SERIAL_OPCODE_HELO:
+        serial_message_out.payload = serial_ll_tx_seq;
+        break;
+    default:
+        serial_message_out.payload = 0;
+    }
+
+    // Set the rest of the parameters:
     serial_message_out.last_clock = rtc_seconds;
+    serial_message_out.clock_is_set = badge_conf.clock_authority;
     serial_message_out.from_id = badge_conf.badge_id;
     crc16_apply(&serial_message_out);
     serial_phy_state_tx = SERIAL_PHY_STATE_IDLE;
     UCA1TXBUF = SERIAL_PHY_SYNC_WORD;
-    serial_phy_timeout_counter = SERIAL_PHY_TIMEOUT_TICKS;
     // The interrupts will take it from here.
 }
 
+void serial_ll_enter_state(uint8_t new_state) {
+    uint8_t old_state = serial_ll_state;
+    serial_ll_state = new_state;
+
+    switch(new_state) {
+    case SERIAL_LL_STATE_IDLE:
+        serial_ll_timeout_ticks = SERIAL_IDLE_TIMEOUT_TICKS;
+        break;
+    case SERIAL_LL_STATE_NC1:
+        serial_ll_timeout_ticks = SERIAL_NC_TIMEOUT_TICKS;
+        if (old_state == SERIAL_LL_STATE_IDLE) {
+            // If we're entering this state from idle, increment
+            //  our outgoing sequence number. Don't do this if it's
+            //  a re-transmit.
+            serial_ll_tx_seq++;
+        }
+        // Send a HELO message.
+        serial_send_start(SERIAL_OPCODE_HELO);
+        break;
+    case SERIAL_LL_STATE_NC2:
+        serial_ll_timeout_ticks = SERIAL_NC_TIMEOUT_TICKS;
+        // Send an ACK.
+        serial_send_start(SERIAL_OPCODE_ACK);
+        break;
+    case SERIAL_LL_STATE_C:
+        serial_ll_timeout_ticks = SERIAL_C_TIMEOUT_TICKS;
+        if (old_state != new_state) {
+            // TODO: badge_connected or whatever.
+        }
+        break;
+    case SERIAL_LL_STATE_BLOCK:
+        serial_ll_timeout_ticks = SERIAL_BLOCK_TIMEOUT_TICKS;
+        break;
+    }
+}
+
 void serial_ll_timeout() {
-//    switch(serial_ll_state) {
-//    case SERIAL_LL_STATE_NC_PRX:
-//        if (!badge_active) {
-//            serial_ll_timeout_ms = PRX_TIME_MS;
-//            break; // If we're not active, we never leave PRX.
-//        }
-//
-//        // Pin us in PRX mode if the PTX input is asserted.
-//        if (SERIAL_DIO_IN & SERIAL_DIO1_PTX) {
-//            serial_ll_timeout_ms = PRX_TIME_MS;
-//            break;
-//        }
-//
-//        serial_enter_ptx();
-//
-//        serial_ll_state = SERIAL_LL_STATE_NC_PTX;
-//        break;
-//    case SERIAL_LL_STATE_NC_PTX:
-//        // Pin us in PTX mode if the PRX input is asserted.
-//        if (SERIAL_DIO_IN & SERIAL_DIO2_PRX) {
-//            serial_ll_timeout_ms = PTX_TIME_MS;
-//
-//            serial_send_start(SERIAL_OPCODE_HELO, 0);
-//            break;
-//        }
-//
-//        serial_enter_prx();
-//
-//        serial_ll_state = SERIAL_LL_STATE_NC_PRX;
-//        break;
-//    default:
-//        serial_ll_timeout_ms = SERIAL_C_DIO_POLL_MS;
-//        if (
-//                (serial_phy_mode_ptx && !(SERIAL_DIO_IN & SERIAL_DIO2_PRX))
-//                || (!serial_phy_mode_ptx && !(SERIAL_DIO_IN & SERIAL_DIO1_PTX))
-//        ) {
-//            // We read connection-sense LOW, so we're unplugged.
-//            serial_enter_prx();
-//            serial_ll_state = SERIAL_LL_STATE_NC_PRX;
-//            s_disconnected = 1;
-//        }
-//        break;
-//    }
+    switch(serial_ll_state) {
+    case SERIAL_LL_STATE_BLOCK:
+        // If we're in BLOCK, a timeout sends us back to IDLE:
+        serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
+        break;
+    case SERIAL_LL_STATE_NC1:
+    case SERIAL_LL_STATE_NC2:
+    case SERIAL_LL_STATE_C:
+    case SERIAL_LL_STATE_IDLE:
+        // Otherwise, we re-enter the existing state:
+        serial_ll_enter_state(serial_ll_state);
+        break;
+    }
 }
 
 /// Call this every system tick
-void serial_ll_tick() {
+void serial_tick() {
+    // TODO: debounce O_HAI (P2.4, active LOW)
+    // TODO: possibly call serial_phy_connect or serial_phy_disconnect
+
     serial_ll_timeout_ticks--;
 
     if (!serial_ll_timeout_ticks) {
@@ -169,106 +194,58 @@ void serial_ll_tick() {
 }
 
 void serial_ll_handle_rx() {
-//    // Note: the proper operation of this function depends on an alternating
-//    //       RX/TX mode of operation; that is, there's a danger that if the
-//    //       remote badge sends multiple messages in a row, the header and
-//    //       payload could get clobbered.
-//    switch(serial_ll_state) {
-//    case SERIAL_LL_STATE_NC_PRX:
-//        // Expecting a HELO.
-//        if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
-//            // Need to send an ACK.
-//            serial_send_start(SERIAL_OPCODE_ACK, 0);
-//            // Once that completes, we'll be connected.
-//            connected_badge_id = serial_message_in.from_id;
-//            serial_ll_state = SERIAL_LL_STATE_C_IDLE;
-//            serial_ll_timeout_ms = SERIAL_C_DIO_POLL_MS;
-//            s_connected = 1;
-//        }
-//        break;
-//    case SERIAL_LL_STATE_NC_PTX:
-//        // We sent a HELO when we entered this state, so we need an ACK.
-//        if (serial_message_in.opcode == SERIAL_OPCODE_ACK) {
-//            connected_badge_id = serial_message_in.from_id;
-//            serial_ll_state = SERIAL_LL_STATE_C_IDLE;
-//            serial_ll_timeout_ms = SERIAL_C_DIO_POLL_MS;
-//            s_connected = 1;
-//        }
-//        break;
-//    case SERIAL_LL_STATE_C_IDLE:
-//        // cbadges must implement the following commands from idle:
-//        // * STAT1Q - send a copy of badge_conf.stats
-//        // * STAT2Q - send a pairing message (but not pair)
-//        // * SETID  - ONLY FROM CONTROLLER - set ID and respond with ACK.
-//        // * SETNAME - Set my handle
-//        // * DUMPQ - Reply with a DUMPA
-//        // * DISCON - Simulate a physical disconnection.
-//        // * SETTYPE - Promote myself to uber or handler, respond with ACK. (CONTROLLER ONLY)
-//        // * PAIR - Begin pairing.
-//        serial_ll_timeout_ms = SERIAL_C_DIO_POLL_MS;
-//
-//        if (serial_message_in.opcode == SERIAL_OPCODE_STAT1Q) {
-//            serial_send_stats();
-//
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_STAT2Q) {
-//            serial_pair();
-//
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_SETID) {
-//            memcpy(&badge_conf.badge_id, (uint8_t *) serial_buffer_in, sizeof(badge_conf.badge_id));
-//            write_conf();
-//            set_display_type(DISPLAY_OFF);
-//            serial_send_start(SERIAL_OPCODE_ACK, 0);
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_DUMPQ) {
-//            uint8_t pillar_id = serial_buffer_in[0];
-//            if (pillar_id > 3) {
-//                // Invalid pillar, do nothing.
-//                break;
-//            }
-//            serial_dump_answer(pillar_id);
-//
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_DISCON) {
-//            serial_enter_prx();
-//            serial_ll_state = SERIAL_LL_STATE_NC_PRX;
-//            s_disconnected = 1;
-//
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_SETTYPE) {
-//            badge_conf.badge_type = serial_buffer_in[0] & 0b11000000;
-//            write_conf();
-//            serial_send_start(SERIAL_OPCODE_ACK, 0);
-//
-//        } else if (serial_message_in.opcode == SERIAL_OPCODE_PAIR) {
-//            serial_ll_state = SERIAL_LL_STATE_C_PAIRED;
-//            s_paired = 1;
-//            badge_conf.element_selected = ELEMENT_COUNT_NONE;
-//            serial_pair();
-//        }
-//        break;
-//    case SERIAL_LL_STATE_C_PAIRING:
-//        if (serial_message_in.opcode == SERIAL_OPCODE_PAIR) {
-//            serial_ll_state = SERIAL_LL_STATE_C_PAIRED;
-//            s_paired = 1;
-//        }
-//        break;
-//    case SERIAL_LL_STATE_C_PAIRED:
-//        // The element selection buttons are ignored.
-//        // Color-picking buttons are ignored.
-//        // But, mission-doing is a thing!
-//        if (serial_message_in.opcode == SERIAL_OPCODE_GOMISSION) {
-//            mission_t *mission = (mission_t *) &serial_buffer_in[1];
-//            complete_mission(mission);
-//        }
-//        break;
-//    }
-//
-//    // General purpose ones:
-//    if (serial_message_in.opcode == SERIAL_OPCODE_SETNAME) {
-//        memcpy(&badge_conf.handle, (uint8_t *) serial_buffer_in, QC16_BADGE_NAME_LEN);
-//        // Guarantee null term:
-//        badge_conf.handle[QC16_BADGE_NAME_LEN] = 0x00;
-//        write_conf();
-//        // Don't ACK, but rather send a pairing update with our new handle:
-//        serial_pair();
-//    }
+    // NB: All structural and opcode-specific (but not state-specific)
+    //     validation has already been done. Any ACK has already been
+    //     checked against the expected sequence number.
+
+    switch(serial_ll_state) {
+    case SERIAL_LL_STATE_IDLE:
+        // Expecting a SETID (handled here) or physical connection (handled elsewhere).
+        if (serial_message_in.opcode == SERIAL_OPCODE_SETID) {
+            // TODO: Set ID
+            // TODO: Send ACK
+            // TODO: Stay idle.
+        }
+        break;
+    case SERIAL_LL_STATE_NC1:
+        // Expecting a HELO.
+        if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
+            serial_ll_rx_seq = (uint8_t) (0xff & serial_message_in.payload);
+            serial_ll_enter_state(SERIAL_LL_STATE_NC2);
+        }
+        break;
+    case SERIAL_LL_STATE_NC2:
+        // Expecting an ACK.
+        if (serial_message_in.opcode == SERIAL_OPCODE_ACK) {
+            serial_ll_enter_state(SERIAL_LL_STATE_C);
+        }
+        break;
+    }
+    // In all other cases we ignore messages.
+}
+
+/// Handle the physical connection of two badges.
+void serial_phy_connect() {
+    // We got an O_HAI signal that looks good.
+    // Enter NC1:
+    serial_ll_enter_state(SERIAL_LL_STATE_NC1);
+}
+
+/// Handle the physical disconnection of two badges.
+void serial_phy_disconnect() {
+    // PHY TX will handle its own business of shouting into space.
+    // PHY RX needs to be set to idle.
+    serial_phy_state_rx = SERIAL_PHY_STATE_IDLE;
+
+    // Determine whether we need to enter a blocking state to prevent
+    //  spurious reconnections during a just-connected animation:
+    if (serial_ll_state == SERIAL_LL_STATE_C) {
+        // Block if we had a good completed connection.
+        serial_ll_enter_state(SERIAL_LL_STATE_BLOCK);
+    } else {
+        // Otherwise, skip blocking and jump to idle.
+        serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
+    }
 }
 
 void serial_phy_handle_rx() {
@@ -277,13 +254,11 @@ void serial_phy_handle_rx() {
         return;
     }
 
-    // So, clear out our timeout:
-    serial_phy_timeout_counter = SERIAL_PHY_TIMEOUT_TICKS;
-    // Handle the message at the link-layer.
+    // It's valid. So, hand the message to the link-layer.
     serial_ll_handle_rx();
 }
 
-void init_serial() {
+void serial_init() {
     // We'll be using UCA1 here.
 
     // Pause the UART peripheral:
@@ -304,12 +279,11 @@ void init_serial() {
     //  now:
     UCA1IFG &= ~UCTXIFG;
 
-    // Our initial config is in PRX mode.
-//    serial_ll_state = SERIAL_LL_STATE_NC_PRX; // TODO
-
     // PHY and link-layer state:
-    serial_phy_mode_ptx=0;
-    serial_ll_timeout_ticks = SERIAL_PHY_TIMEOUT_TICKS;
+    serial_phy_state_rx = SERIAL_PHY_STATE_IDLE;
+    serial_phy_state_tx = SERIAL_PHY_STATE_IDLE;
+
+    serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
 
     // Enable interrupts for TX and RX:
     UCA1IE |= UCTXIE | UCRXIE;
