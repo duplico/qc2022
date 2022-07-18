@@ -157,6 +157,7 @@ void serial_ll_enter_state(uint8_t new_state) {
         serial_ll_timeout_ticks = SERIAL_C_TIMEOUT_TICKS;
         if (old_state != new_state) {
             // TODO: badge_connected or whatever.
+            __no_operation();
         }
         break;
     case SERIAL_LL_STATE_BLOCK:
@@ -190,9 +191,10 @@ void serial_ll_handle_rx() {
     case SERIAL_LL_STATE_IDLE:
         // Expecting a SETID (handled here) or physical connection (handled elsewhere).
         if (serial_message_in.opcode == SERIAL_OPCODE_SETID) {
-            // TODO: Set ID
-            // TODO: Send ACK
-            // TODO: Stay idle.
+            // Set ID, send ACK, and stay idle:
+            badge_conf.badge_id = (uint8_t) (0xff & serial_message_in.payload);
+            serial_ll_rx_seq = badge_conf.badge_id;
+            serial_send_start(SERIAL_OPCODE_ACK);
         }
         break;
     case SERIAL_LL_STATE_NC1:
@@ -203,9 +205,12 @@ void serial_ll_handle_rx() {
         }
         break;
     case SERIAL_LL_STATE_NC2:
-        // Expecting an ACK.
+        // Expecting an ACK. (TODO: or possibly HELO re-TX)
         if (serial_message_in.opcode == SERIAL_OPCODE_ACK) {
             serial_ll_enter_state(SERIAL_LL_STATE_C);
+        } else if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
+            serial_ll_rx_seq = (uint8_t) (0xff & serial_message_in.payload);
+            serial_ll_enter_state(SERIAL_LL_STATE_NC2);
         }
         break;
     }
@@ -239,7 +244,7 @@ void serial_phy_disconnect() {
 void serial_phy_handle_rx() {
     // We just got a complete serial message. Validate it.
     if (!validate_message((serial_message_t *) &serial_message_in)) {
-        return;
+        return; // Invalid; ignore.
     }
 
     // It's valid. So, hand the message to the link-layer.
