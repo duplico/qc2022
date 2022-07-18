@@ -162,7 +162,6 @@ void init_timers() {
     // We'd like to have this run at like 60-100 Hz, I think.
     // We'll divide our 32k clock by 64 to get 512 Hz.
     // Then, we'll use a period of 8 to get 64ish frames per second.
-    // TODO: Rename
     Timer_A_initUpModeParam next_channel_timer_init = {};
     next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
     next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;

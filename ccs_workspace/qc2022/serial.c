@@ -84,7 +84,6 @@ uint8_t validate_message(serial_message_t *message) {
     // Opcode-specific validation:
     switch(message->opcode) {
     case SERIAL_OPCODE_HELO:
-        // TODO: Is there anything to check here?
         break;
     case SERIAL_OPCODE_ACK:
         if (message->payload != serial_ll_tx_seq) {
@@ -156,7 +155,6 @@ void serial_ll_enter_state(uint8_t new_state) {
     case SERIAL_LL_STATE_C:
         serial_ll_timeout_ticks = SERIAL_C_TIMEOUT_TICKS;
         if (old_state != new_state) {
-            // TODO: badge_connected or whatever.
             __no_operation();
         }
         break;
@@ -205,7 +203,6 @@ void serial_ll_handle_rx() {
         }
         break;
     case SERIAL_LL_STATE_NC2:
-        // Expecting an ACK. (TODO: or possibly HELO re-TX)
         if (serial_message_in.opcode == SERIAL_OPCODE_ACK) {
             serial_ll_enter_state(SERIAL_LL_STATE_C);
         } else if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
@@ -285,7 +282,7 @@ void serial_init() {
 
     // Pause the UART peripheral:
     UCA1CTLW0 |= UCSWRST;
-    // Configure the baud rate to 230400. // TODO: is that okay?
+    // Configure the baud rate to 230400.
     //  (See page 589 in the family user's guide, SLAU445I)
     // The below is for 8.00 MHz SMCLK:
     UCA1BRW = 2;
@@ -358,7 +355,7 @@ __interrupt void serial_isr() {
                 // Done sending the message.
                 serial_phy_state_tx = SERIAL_PHY_STATE_IDLE;
                 serial_phy_index_tx = 0;
-                LPM3_EXIT; // TODO: this?
+                LPM3_EXIT;
             }
             break;
         }
