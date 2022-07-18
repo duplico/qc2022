@@ -170,7 +170,7 @@ void init_timers() {
     Timer_A_initUpModeParam next_channel_timer_init = {};
     next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
     next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;
-    next_channel_timer_init.timerPeriod = 8;
+    next_channel_timer_init.timerPeriod = 32;
     next_channel_timer_init.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
     next_channel_timer_init.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
     next_channel_timer_init.timerClear = TIMER_A_SKIP_CLEAR;
