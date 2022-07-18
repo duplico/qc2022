@@ -15,10 +15,11 @@
 // Accessory headers
 #include <driverlib.h>
 
-// Local headers
+// CapTIvate
+#include "captivate.h"
 #include "CAPT_App.h"
-#include "CAPT_BSP.h"
 
+// Local
 #include "tlc5948a.h"
 #include "leds.h"
 #include "rtc.h"
@@ -182,6 +183,20 @@ void init_timers() {
     Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
 }
 
+void button_cb(tSensor *pSensor) {
+    if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
+    {
+        // Button press
+        __no_operation();
+    }
+
+    if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch == true))
+    {
+        // Button release
+        __no_operation();
+    }
+}
+
 /// Make snafucated.
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // Hold WDT.
@@ -201,7 +216,17 @@ int main(void) {
 
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
 
-    CAPT_appStart();
+    MAP_CAPT_initUI(&g_uiApp);
+    MAP_CAPT_calibrateUI(&g_uiApp);
+    MAP_CAPT_registerCallback(&BTN00, &button_cb);
+
+    MAP_CAPT_stopTimer();
+    MAP_CAPT_clearTimer();
+    MAP_CAPT_selectTimerSource(CAPT_TIMER_SRC_ACLK);
+    MAP_CAPT_selectTimerSourceDivider(CAPT_TIMER_CLKDIV__1);
+    MAP_CAPT_writeTimerCompRegister(CAPT_MS_TO_CYCLES(g_uiApp.ui16ActiveModeScanPeriod));
+    MAP_CAPT_startTimer();
+    MAP_CAPT_enableISR(CAPT_TIMER_INTERRUPT);
 
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
 
@@ -225,12 +250,14 @@ int main(void) {
             f_serial_phy = 0;
         }
 
-        if(CAPT_appHandler()==true) {
-            // TODO: What happened exactly?
-            __no_operation();
+        // Check whether CapTIvate needs to be serviced.
+        if (g_bConvTimerFlag)
+        {
+            CAPT_updateUI(&g_uiApp);
+            g_bConvTimerFlag = false;
         }
 
-        CAPT_appSleep();
+        __bis_SR_register(LPM0_bits);
     } // End background loop
 }
 
