@@ -197,7 +197,7 @@ int main(void) {
     tlc_init();
     serial_init();
 
-//    CAPT_appStart();
+    CAPT_appStart();
 
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
 
@@ -223,12 +223,12 @@ int main(void) {
             f_serial_phy = 0;
         }
 
-//        if(CAPT_appHandler()==true) {
-//            // TODO: What happened exactly?
-//            __no_operation();
-//        }
-//
-//        CAPT_appSleep();
+        if(CAPT_appHandler()==true) {
+            // TODO: What happened exactly?
+            __no_operation();
+        }
+
+        CAPT_appSleep();
     } // End background loop
 }
 
