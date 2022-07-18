@@ -33,6 +33,6 @@ void tlc_set_fun();
 void tlc_stage_blank(uint8_t);
 
 extern uint8_t tlc_send_type;
-extern uint16_t tlc_bank_gs[6][16];
+extern uint16_t tlc_gs_data[16];
 
 #endif /* TLC5948A_H_ */

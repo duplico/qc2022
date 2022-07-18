@@ -20,6 +20,7 @@
 #include "CAPT_BSP.h"
 
 #include "tlc5948a.h"
+#include "leds.h"
 #include "rtc.h"
 #include "serial.h"
 #include "badge.h"
@@ -31,6 +32,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .in_service = 0,
     .clock_authority = 0,
     .badges_seen = {0,},
+    .current_anim_id = 4,
 };
 
 // Interrupt flags
@@ -197,6 +199,8 @@ int main(void) {
     tlc_init();
     serial_init();
 
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
+
     CAPT_appStart();
 
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
@@ -209,10 +213,8 @@ int main(void) {
             // First off, pat the dog.
             WDTCTL = WDTPW | WDTSSEL__ACLK | WDTIS__32K | WDTCNTCL; // 1 second WDT
 
-            // TODO:
             // Service the LED animation timestep.
-            // leds_timestep();
-
+            leds_timestep();
             serial_tick();
 
             f_time_loop = 0;
