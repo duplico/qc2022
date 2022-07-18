@@ -181,18 +181,6 @@ void serial_ll_timeout() {
     }
 }
 
-/// Call this every system tick
-void serial_tick() {
-    // TODO: debounce O_HAI (P2.4, active LOW)
-    // TODO: possibly call serial_phy_connect or serial_phy_disconnect
-
-    serial_ll_timeout_ticks--;
-
-    if (!serial_ll_timeout_ticks) {
-        serial_ll_timeout();
-    }
-}
-
 void serial_ll_handle_rx() {
     // NB: All structural and opcode-specific (but not state-specific)
     //     validation has already been done. Any ACK has already been
@@ -258,6 +246,35 @@ void serial_phy_handle_rx() {
     serial_ll_handle_rx();
 }
 
+/// Call this every system tick
+void serial_tick() {
+    // First, debounce the connection detection.
+    static uint8_t ohai_last = 1;
+    static uint8_t ohai_curr = 1;
+
+    volatile uint8_t ohai_read = (P2IN & BIT4) ? 1 : 0;
+    if (ohai_read == ohai_last && ohai_curr != ohai_last) {
+        ohai_curr = ohai_read;
+
+        // Status change on the connection detect line.
+        if (ohai_curr) {
+            // HIGH: disconnected.
+            serial_phy_disconnect();
+        } else {
+            // LOW: connected.
+            serial_phy_connect();
+        }
+    }
+    ohai_last = ohai_read;
+
+    // Next, handle link-layer timeouts.
+    serial_ll_timeout_ticks--;
+
+    if (!serial_ll_timeout_ticks) {
+        serial_ll_timeout();
+    }
+}
+
 void serial_init() {
     // We'll be using UCA1 here.
 
@@ -291,8 +308,8 @@ void serial_init() {
 
 #pragma vector=USCI_A1_VECTOR
 __interrupt void serial_isr() {
-    switch(__even_in_range(UCA1IV, UCTXIFG)) {
-    case UCRXIFG:
+    switch(__even_in_range(UCA1IV, USCI_UART_UCTXIFG)) {
+    case USCI_UART_UCRXIFG:
         // Receive buffer full; a byte is ready to read.
         switch(serial_phy_state_rx) {
         case SERIAL_PHY_STATE_IDLE:
@@ -314,13 +331,13 @@ __interrupt void serial_isr() {
             break; // case SERIAL_PHY_STATE_RX
         }
         break; // case UCRXIFG
-    case UCTXIFG:
+    case USCI_UART_UCTXIFG:
         // Transmit buffer full, ready to load another byte to send.
         switch(serial_phy_state_tx) {
         case SERIAL_PHY_STATE_IDLE:
             // We just sent a sync byte. Time to send the message:
             serial_phy_state_tx = SERIAL_PHY_STATE_TX;
-            serial_phy_index_rx = 0;
+            serial_phy_index_tx = 0;
             // fall through...
         case SERIAL_PHY_STATE_TX:
             // This works slightly differently than the receiving version.
@@ -328,9 +345,9 @@ __interrupt void serial_isr() {
             //  because we just sent serial_message_out[serial_phy_index-1]
             //  (or, if serial_phy_index_rx == 0, it was the syncbyte)
 
-            if (serial_phy_index_rx < sizeof(serial_message_out)) {
+            if (serial_phy_index_tx < sizeof(serial_message_out)) {
                 // Need to send another.
-                UCA1TXBUF = ((uint8_t *) (&serial_message_out))[serial_phy_index_rx];
+                UCA1TXBUF = ((uint8_t *) (&serial_message_out))[serial_phy_index_tx];
                 serial_phy_index_tx++;
             } else {
                 // Done sending the message.
