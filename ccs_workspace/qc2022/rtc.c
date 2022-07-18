@@ -11,6 +11,8 @@
 
 #include "badge.h"
 
+extern uint8_t button_state;
+
 // TODO: Persistent?
 uint32_t rtc_seconds = 0;
 
@@ -38,5 +40,8 @@ __interrupt void RTC_ISR(void) {
     // Called when the RTC overflows (currently every second)
     if (RTCIV == RTCIV_RTCIF) {
         rtc_seconds++;
+        if (button_state) {
+            f_long_press = 1;
+        }
     }
 }
