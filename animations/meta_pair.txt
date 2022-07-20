@@ -6,7 +6,6 @@
 5 lightseagreen
 6 purple
 
-#band
 solid
 
 1,0,0,0,45,45,

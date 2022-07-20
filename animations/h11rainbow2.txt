@@ -6,8 +6,6 @@
 6 purple
 7 white
 
-
-#band
 solid
 
 1,1,1,1,40,40,

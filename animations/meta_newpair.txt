@@ -6,7 +6,6 @@
 5 blue
 6 purple
 
-#band
 solid
 
 1,2,3,4,1,45,

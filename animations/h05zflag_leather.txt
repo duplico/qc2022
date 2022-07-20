@@ -4,7 +4,6 @@
 3 white
 4 fadered
 
-#band
 solid
 
 1,2,3,1,200,500,

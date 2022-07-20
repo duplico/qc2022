@@ -3,7 +3,6 @@
 2 green
 3 slateblue
 
-# band
 solid
 1,2,2,1,400,200,
 

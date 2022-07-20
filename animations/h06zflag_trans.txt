@@ -3,7 +3,6 @@
 2 deepskyblue
 3 white
 
-# band
 solid
 
 2,0,0,2,150,140,

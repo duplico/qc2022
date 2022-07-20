@@ -2,7 +2,6 @@
 1 deepskyblue
 2 darkorange
 
-#band
 solid
 
 1,1,2,2,400, 200,
