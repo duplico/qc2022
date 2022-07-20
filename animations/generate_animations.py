@@ -145,14 +145,12 @@ def main():
             h_lines.append("extern const leds_animation_t %s;" % anim_name)
 
     c_lines.append("")
-    h_lines.append("#define HEAD_ANIM_COUNT %d" % len(all_animations))
-    h_lines.append("#define HEAD_ANIM_COUNT_INCL_META %d" % len(all_animations+meta_animations))
+    h_lines.append("#define ANIM_COUNT %d" % len(all_animations))
+    h_lines.append("#define ANIM_COUNT_INCL_META %d" % len(all_animations+meta_animations))
     for i in range(len(all_animations+meta_animations)):
-        h_lines.append("#define HEAD_ANIM_%s %d" % ((all_animations+meta_animations)[i].upper(), i))
+        h_lines.append("#define ANIM_%s %d" % ((all_animations+meta_animations)[i].upper(), i))
     for i in range(len(all_types)):
         h_lines.append("#define ANIM_TYPE_%s %d" % (all_types[i].upper(), i))
-    h_lines.append("#define LEG_ANIM_TYPE_COUNT %d" % len(all_types))
-
 
     c_lines.append("const leds_animation_t *all_anims[%d] = {%s};" % (len(all_animations+meta_animations), ', '.join(map(lambda a: '&%s' % a, all_animations+meta_animations))))
     h_lines.append("extern const leds_animation_t *all_anims[%d];" % len(all_animations+meta_animations))

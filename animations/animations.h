@@ -63,25 +63,24 @@ extern const rgbcolor_t meta_pair_frames[][4];
 extern const uint16_t meta_pair_durations[];
 extern const uint16_t meta_pair_fade_durs[];
 extern const leds_animation_t meta_pair;
-#define HEAD_ANIM_COUNT 12
-#define HEAD_ANIM_COUNT_INCL_META 15
-#define HEAD_ANIM_H00GEEK_GIRL 0
-#define HEAD_ANIM_H01LAGOON 1
-#define HEAD_ANIM_H02FIRE 2
-#define HEAD_ANIM_H03ICE 3
-#define HEAD_ANIM_H04RAINBOW 4
-#define HEAD_ANIM_H05ZFLAG_LEATHER 5
-#define HEAD_ANIM_H06ZFLAG_TRANS 6
-#define HEAD_ANIM_H07PAN 7
-#define HEAD_ANIM_H08ZFLAG_BEAR 8
-#define HEAD_ANIM_H09WIGGLE 9
-#define HEAD_ANIM_H10WHITE 10
-#define HEAD_ANIM_H11RAINBOW2 11
-#define HEAD_ANIM_META_BOOP 12
-#define HEAD_ANIM_META_NEWPAIR 13
-#define HEAD_ANIM_META_PAIR 14
+#define ANIM_COUNT 12
+#define ANIM_COUNT_INCL_META 15
+#define ANIM_H00GEEK_GIRL 0
+#define ANIM_H01LAGOON 1
+#define ANIM_H02FIRE 2
+#define ANIM_H03ICE 3
+#define ANIM_H04RAINBOW 4
+#define ANIM_H05ZFLAG_LEATHER 5
+#define ANIM_H06ZFLAG_TRANS 6
+#define ANIM_H07PAN 7
+#define ANIM_H08ZFLAG_BEAR 8
+#define ANIM_H09WIGGLE 9
+#define ANIM_H10WHITE 10
+#define ANIM_H11RAINBOW2 11
+#define ANIM_META_BOOP 12
+#define ANIM_META_NEWPAIR 13
+#define ANIM_META_PAIR 14
 #define ANIM_TYPE_SOLID 0
 #define ANIM_TYPE_FASTTWINKLE 1
-#define LEG_ANIM_TYPE_COUNT 2
 extern const leds_animation_t *all_anims[15];
 #endif // _H_
