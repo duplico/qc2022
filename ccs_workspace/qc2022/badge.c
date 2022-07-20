@@ -9,7 +9,7 @@
 
 #include "badge.h"
 
-#include "band_anims.h"
+#include "animations.h"
 
 badge_conf_t badge_conf = (badge_conf_t){
     .badge_id = BADGE_ID_UNASSIGNED,
@@ -30,7 +30,7 @@ void next_animation() {
 
     do {
         candidate +=1;
-        if (candidate == HEAD_ANIM_COUNT)
+        if (candidate == ANIM_COUNT)
             candidate = 0;
     } while (!anim_unlocked(candidate));
 

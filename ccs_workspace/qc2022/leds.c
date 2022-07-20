@@ -14,19 +14,7 @@
 #include "tlc5948a.h"
 
 #include "leds.h"
-#include "band_anims.h"
-
-/*
- * The LED order is RIGHT TO LEFT. So, gs[0] is the rightmost LED,
- *  gs[3] is the leftmost, and gs[4] is the HEART!
- */
-
-const rgbcolor16_t band_off[LED_COUNT] = {
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-};
+#include "animations.h"
 
 rgbcolor16_t band_colors_curr[LED_COUNT] = {
         {0, 0, 0},
@@ -199,7 +187,7 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
         return;
     }
 
-    leds_start_anim_by_struct(band_all_anims[anim_id], loop, ambient);
+    leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
 
     leds_anim_id = anim_id;
 }

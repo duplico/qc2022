@@ -25,7 +25,7 @@
 #include "rtc.h"
 #include "serial.h"
 #include "badge.h"
-#include "band_anims.h"
+#include "animations.h"
 
 // Global state
 uint8_t button_state;
