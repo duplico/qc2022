@@ -1,0 +1,30 @@
+0 red
+1 darkorange
+2 yellow
+3 green
+
+4 blue
+5 purple
+6 white
+7 limegreen
+
+8 MediumAquaMarine 
+9 indigo
+10 goldenrod
+11 b1
+
+12 pink
+13 slateblue 
+14 deepskyblue
+15 MediumVioletRed 
+
+#band
+solid
+
+3,2,1,0,1,45,
+
+7,6,5,4,1,45,
+
+11,10,9,8,1,45,
+
+15,14,13,12,1,45,

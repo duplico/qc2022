@@ -1,0 +1,7 @@
+0 off
+1 white
+
+#band
+fasttwinkle
+
+1,1,1,1,100,100,
