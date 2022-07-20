@@ -16,18 +16,6 @@
 #include "leds.h"
 #include "band_anims.h"
 
-/*
- * The LED order is RIGHT TO LEFT. So, gs[0] is the rightmost LED,
- *  gs[3] is the leftmost, and gs[4] is the HEART!
- */
-
-const rgbcolor16_t band_off[LED_COUNT] = {
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-};
-
 rgbcolor16_t band_colors_curr[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},

@@ -42,7 +42,6 @@ typedef struct {
     const uint16_t *fade_durs;
     uint8_t len;
     uint8_t anim_type;
-    uint8_t boop_loops;
 } leds_animation_t;
 
 extern uint8_t current_ambient_correct;
