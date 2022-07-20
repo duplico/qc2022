@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #define LED_COUNT 4
-#define LEGS_DUR_STEP 14
+#define TICKS_PER_LED_ANIM_DUR 14 // Number of system ticks per unit of duration in animations.
 
 #define BAND_TWINKLE_STEPS_FAST 100
 #define BAND_TWINKLE_STEPS_SLOW 400
