@@ -68,7 +68,7 @@ def main():
         with open(anim) as f:
             local_colors = dict()
             
-            lines = [line.strip() for line in f if line.strip() and (line[0] != "#" or "BAND" in line.upper() or "SINGLE" in line.upper() or "INK" in line.upper() or "DOUBLE" in line.upper())]
+            lines = [line.strip() for line in f if line.strip() and (line[0] != "#")]
             line_no = 0
             
             # Consume all of the colors in this
@@ -86,9 +86,6 @@ def main():
                 line_no += 1
             
             camo_line = ""
-
-            assert "BAND" in lines[line_no].upper()
-            line_no += 1
                 
             local_type = lines[line_no]
             assert local_type[0] not in string.digits
