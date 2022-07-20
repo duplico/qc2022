@@ -22,6 +22,10 @@ color_corrections = {
     "fadered" : (15, 0, 0),
 }
 
+LED_COUNT = 4
+HOLD_DUR_INDEX = LED_COUNT
+FADE_DUR_INDEX = LED_COUNT+1
+
 global_color_correct = (1,1,1)
 
 eye_frames = dict()
@@ -79,8 +83,11 @@ def main():
                     local_colors[int(color_num)] = tuple(map(lambda a: int(a[0]*a[1]), zip(local_colors[int(color_num)], global_color_correct)))
                 line_no += 1
             
-            camo_line = ""
-                
+            frame_lines_str = ""
+            
+            # The next line is the animation TYPE. We don't actually use or check the
+            #  type value in this script, but the badge code does care whether it's
+            #  solid or twinkling or fading or whatever.
             local_type = lines[line_no]
             assert local_type[0] not in string.digits
             if local_type not in all_types: all_types.append(local_type)
@@ -89,23 +96,23 @@ def main():
             try:
                 while lines[line_no][0] in string.digits:
                     # Consume the animation. Ignore white space
-                    camo_line += lines[line_no]
+                    frame_lines_str += lines[line_no]
                     line_no += 1
             except IndexError:
                 pass
 
-            if camo_line[-1] == ',':
-                camo_line = camo_line[:-1]
-            camo = list(map(lambda s: int(s.strip()), camo_line.split(',')))
-            camo_frames = [camo[i:i+6] for i in range(0, len(camo), 6)]   
+            if frame_lines_str[-1] == ',':
+                frame_lines_str = frame_lines_str[:-1]
+            animation_squashed = list(map(lambda s: int(s.strip()), frame_lines_str.split(',')))
+            frames = [animation_squashed[i:i+LED_COUNT+2] for i in range(0, len(animation_squashed), LED_COUNT+2)]   
             
             # Great. Now we've ingested the entire file.
             # Time to start generating frames.
             
             local_animation_names = []
 
-            c_lines.append("const rgbcolor_t %s_frames[][4] = {" % anim_name)
-            h_lines.append("extern const rgbcolor_t %s_frames[][4];" % anim_name)
+            c_lines.append("const rgbcolor_t %s_frames[][%d] = {" % (anim_name, LED_COUNT))
+            h_lines.append("extern const rgbcolor_t %s_frames[][%d];" % (anim_name, LED_COUNT))
             
             # Flags are all the same.
             local_animation_names += [anim_name]
@@ -113,12 +120,12 @@ def main():
             metadata1 = []
             metadata2 = []
             total_duration = 0
-            for f in camo_frames:
-                metadata1 += [str(f[4])]
-                metadata2 += [str(f[5])]
-                total_duration += int(f[4]) + int(f[5])
+            for f in frames:
+                metadata1 += [str(f[HOLD_DUR_INDEX])]
+                metadata2 += [str(f[FADE_DUR_INDEX])]
+                total_duration += int(f[HOLD_DUR_INDEX]) + int(f[FADE_DUR_INDEX])
                 try:
-                    fr = list(map(lambda a: local_colors[a], f[:4]))
+                    fr = list(map(lambda a: local_colors[a], f[:LED_COUNT]))
                 except:
                     print('Error on frame: ', f)
                     exit(1)
@@ -133,7 +140,7 @@ def main():
             h_lines.append("extern const uint16_t %s_fade_durs[];" % anim_name)
             
             c_lines.append("// the animation:")
-            c_lines.append("const leds_animation_t %s = {%s_frames, %s_durations, %s_fade_durs, %d, ANIM_TYPE_%s};" % (anim_name, anim_name, anim_name, anim_name, len(camo_frames), local_type.upper()))
+            c_lines.append("const leds_animation_t %s = {%s_frames, %s_durations, %s_fade_durs, %d, ANIM_TYPE_%s};" % (anim_name, anim_name, anim_name, anim_name, len(frames), local_type.upper()))
             
             h_lines.append("extern const leds_animation_t %s;" % anim_name)
 
