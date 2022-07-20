@@ -27,25 +27,19 @@ global_color_correct = (1,1,1)
 eye_frames = dict()
 eye_frames_uint32 = dict()
 
-c_lines = []
+c_lines = [
+    '#include "leds.h"',
+    '#include "animations.h"',
+]
 h_lines = [
     "#ifndef ANIMATIONS_H_",
     "#define ANIMATIONS_H_",
     "",
     '#include "leds.h"',
     "",
-    "#define LEG_CAMO_INDEX 0",
-    "#define LEG_INK_INDEX 1",
-    "#define LEG_DOUBLEINK_INDEX 2",
-    "#define LEG_ANIM_TYPE_NONE 201",
-    "#define LEG_ANIM_NONE 211",
-    "",
 ]
 
-def main():    
-    c_lines.append('#include "leds.h"')
-    c_lines.append('#include "band_anims.h"')
-    
+def main():
     all_animations = []
     meta_animations = []
     all_types = []
@@ -110,11 +104,8 @@ def main():
             
             local_animation_names = []
 
-
-            c_lines.append("// frames for the band:")
-            c_lines.append("const rgbcolor_t %s_band_frames[][4] = {" % anim_name)
-            h_lines.append("// frames for the band:")
-            h_lines.append("extern const rgbcolor_t %s_band_frames[][4];" % anim_name)
+            c_lines.append("const rgbcolor_t %s_frames[][4] = {" % anim_name)
+            h_lines.append("extern const rgbcolor_t %s_frames[][4];" % anim_name)
             
             # Flags are all the same.
             local_animation_names += [anim_name]
@@ -135,16 +126,16 @@ def main():
                 c_lines.append("    {%s}," % ', '.join(map(lambda rgb: "{0x%x, 0x%x, 0x%x}" % tuple(map(int, rgb)), fr)))
             
             c_lines.append("};")
-            c_lines.append("const uint16_t %s_band_durations[] = {%s};" % (anim_name, ', '.join(metadata1)))
-            c_lines.append("const uint16_t %s_band_fade_durs[] = {%s};" % (anim_name, ', '.join(metadata2)))
+            c_lines.append("const uint16_t %s_durations[] = {%s};" % (anim_name, ', '.join(metadata1)))
+            c_lines.append("const uint16_t %s_fade_durs[] = {%s};" % (anim_name, ', '.join(metadata2)))
             
-            h_lines.append("extern const uint16_t %s_band_durations[];" % anim_name)
-            h_lines.append("extern const uint16_t %s_band_fade_durs[];" % anim_name)
+            h_lines.append("extern const uint16_t %s_durations[];" % anim_name)
+            h_lines.append("extern const uint16_t %s_fade_durs[];" % anim_name)
             
             c_lines.append("// the animation:")
-            c_lines.append("const band_animation_t %s = {%s_band_frames, %s_band_durations, %s_band_fade_durs, %d, ANIM_TYPE_%s};" % (anim_name, anim_name, anim_name, anim_name, len(camo_frames), local_type.upper()))
+            c_lines.append("const leds_animation_t %s = {%s_frames, %s_durations, %s_fade_durs, %d, ANIM_TYPE_%s};" % (anim_name, anim_name, anim_name, anim_name, len(camo_frames), local_type.upper()))
             
-            h_lines.append("extern const band_animation_t %s;" % anim_name)
+            h_lines.append("extern const leds_animation_t %s;" % anim_name)
 
     c_lines.append("")
     h_lines.append("#define HEAD_ANIM_COUNT %d" % len(all_animations))
@@ -156,15 +147,15 @@ def main():
     h_lines.append("#define LEG_ANIM_TYPE_COUNT %d" % len(all_types))
 
 
-    c_lines.append("const band_animation_t *band_all_anims[%d] = {%s};" % (len(all_animations+meta_animations), ', '.join(map(lambda a: '&%s' % a, all_animations+meta_animations))))
-    h_lines.append("extern const band_animation_t *band_all_anims[%d];" % len(all_animations+meta_animations))
+    c_lines.append("const leds_animation_t *all_anims[%d] = {%s};" % (len(all_animations+meta_animations), ', '.join(map(lambda a: '&%s' % a, all_animations+meta_animations))))
+    h_lines.append("extern const leds_animation_t *all_anims[%d];" % len(all_animations+meta_animations))
     
     h_lines.append("#endif // _H_")
      
-    with open("band_anims.c", 'w') as f:
+    with open("animations.c", 'w') as f:
         f.writelines(map(lambda a: a+"\n", c_lines))
     
-    with open("band_anims.h", 'w') as f:
+    with open("animations.h", 'w') as f:
         f.writelines(map(lambda a: a+"\n", h_lines))
             
     
