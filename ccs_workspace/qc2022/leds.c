@@ -140,9 +140,9 @@ void leds_set_gs(const rgbcolor16_t* band_colors) {
 }
 
 void leds_set_steps_and_go() {
-    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / LEGS_DUR_STEP;
+    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
     leds_hold_index = 0;
-    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / LEGS_DUR_STEP;
+    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
     leds_transition_index = 0;
 
     leds_load_colors();
@@ -226,9 +226,9 @@ void leds_timestep() {
     if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
         uint16_t target_index;
         if (leds_current_anim->anim_type == ANIM_TYPE_FASTTWINKLE)
-            target_index = BAND_TWINKLE_STEPS_FAST/LEGS_DUR_STEP;
+            target_index = BAND_TWINKLE_STEPS_FAST/TICKS_PER_LED_ANIM_DUR;
         else
-            target_index = BAND_TWINKLE_STEPS_SLOW/LEGS_DUR_STEP;
+            target_index = BAND_TWINKLE_STEPS_SLOW/TICKS_PER_LED_ANIM_DUR;
 
         if (leds_anim_adjustment_index == target_index) {
             leds_twinkle_bits = rand() % 256;
