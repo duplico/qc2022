@@ -24,4 +24,16 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>animations.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/animations/animations.c</locationURI>
+		</link>
+		<link>
+			<name>animations.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/animations/animations.h</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
