@@ -14,7 +14,7 @@
 #include "tlc5948a.h"
 
 #include "leds.h"
-#include "band_anims.h"
+#include "animations.h"
 
 rgbcolor16_t band_colors_curr[LED_COUNT] = {
         {0, 0, 0},
@@ -187,7 +187,7 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
         return;
     }
 
-    leds_start_anim_by_struct(band_all_anims[anim_id], loop, ambient);
+    leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
 
     leds_anim_id = anim_id;
 }
