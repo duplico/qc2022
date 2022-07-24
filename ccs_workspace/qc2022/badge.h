@@ -34,6 +34,8 @@ typedef struct {
     uint8_t initialized;
     /// Whether this badge thinks it has an authoritative clock.
     uint8_t clock_authority;
+    /// This badge's time clock, in seconds since Wednesday at 8 PM Vegas time.
+    uint32_t clock;
     /// Bitfield tracking badge IDs seen.
     uint8_t badges_seen[BADGES_SEEN_BUFFER_LEN_BYTES];
     /// Counter of badges seen generally, including ubers.
@@ -58,5 +60,6 @@ uint8_t is_uber(uint8_t id);
 uint8_t anim_unlocked(uint8_t id);
 void next_animation();
 void badge_set_id(uint8_t id);
+inline void badge_set_time(uint32_t clock, uint8_t authority);
 
 #endif /* BADGE_H_ */

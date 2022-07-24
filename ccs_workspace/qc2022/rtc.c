@@ -12,16 +12,19 @@
 #include "badge.h"
 
 extern uint8_t button_state;
+uint8_t rtc_button_csecs = 0;
+volatile uint8_t rtc_centiseconds = 0;
+volatile uint32_t rtc_seconds = 0;
 
-uint32_t rtc_seconds = 0;
-
-/// Initialize the on-board real-time clock to tick once per second.
+/// Initialize the on-board real-time clock to tick 100 times per second.
 /**
  ** This sources the RTC from SMCLK (8 MHz) divided by 1000 (8 kHz),
  ** and setting the modulo to 80, so that the RTC will tick 100x
  ** per second.
  */
 void rtc_init() {
+    rtc_seconds = badge_conf.clock;
+
     RTCMOD = 80; // Count the clock to 80 before resetting.
 
     // Read and then throw away RTCIV to clear the interrupt.
@@ -36,17 +39,22 @@ void rtc_init() {
 
 #pragma vector=RTC_VECTOR
 __interrupt void RTC_ISR(void) {
-    static uint8_t centiseconds = 0;
     // Called when the RTC overflows (100 times per second)
     if (RTCIV == RTCIV_RTCIF) {
-        centiseconds++;
+        rtc_centiseconds++;
         f_time_loop = 1;
 
-        if (centiseconds == 100) {
-            centiseconds = 1;
+        if (button_state && rtc_centiseconds == rtc_button_csecs) {
+            f_long_press = 1;
+        }
+
+        if (rtc_centiseconds == 100) {
+            rtc_centiseconds = 1;
             rtc_seconds++;
-            if (button_state) {
-                f_long_press = 1;
+
+            if (!(rtc_seconds % 64)) {
+                // Every 64 seconds, write our time to the config.
+                badge_set_time(rtc_seconds, badge_conf.clock_authority);
             }
         }
 

@@ -160,6 +160,7 @@ void button_cb(tSensor *pSensor) {
     {
         // Button press
         button_state = 1;
+        rtc_button_csecs = rtc_centiseconds;
         next_animation();
     }
 
