@@ -37,7 +37,7 @@ void rtc_init() {
 #pragma vector=RTC_VECTOR
 __interrupt void RTC_ISR(void) {
     static uint8_t centiseconds = 0;
-    // Called when the RTC overflows (currently every second)
+    // Called when the RTC overflows (100 times per second)
     if (RTCIV == RTCIV_RTCIF) {
         centiseconds++;
         f_time_loop = 1;
