@@ -16,6 +16,12 @@
 #include "leds.h"
 #include "animations.h"
 
+#define LED_OFFSET 1
+#define RGB_OFFSET 1
+#define RED_OFFSET 2
+#define GRN_OFFSET 1
+#define BLU_OFFSET 0
+
 rgbcolor16_t band_colors_curr[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
@@ -109,9 +115,6 @@ inline void leds_fade_colors() {
     }
 }
 
-#define LED_OFFSET 1
-#define RGB_OFFSET 0
-
 /// Actually apply the appropriate colors to our grayscale values.
 /**
  ** This also handles special cases, like twinkling.
@@ -139,9 +142,9 @@ void leds_set_gs(const rgbcolor16_t* colors) {
         if (g>UINT16_MAX) g=UINT16_MAX;
         if (b>UINT16_MAX) b=UINT16_MAX;
 
-        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 0] = b;
-        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 1] = g;
-        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 2] = r;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + RED_OFFSET] = b;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + GRN_OFFSET] = g;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + BLU_OFFSET] = r;
     }
 }
 
