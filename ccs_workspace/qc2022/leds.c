@@ -21,6 +21,7 @@ rgbcolor16_t band_colors_curr[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
+        {0, 0, 0},
 };
 
 rgbcolor16_t band_colors_next[LED_COUNT] = {
@@ -28,9 +29,11 @@ rgbcolor16_t band_colors_next[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
+        {0, 0, 0},
 };
 
 rgbdelta_t band_colors_step[LED_COUNT] = {
+        {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
@@ -90,7 +93,7 @@ void leds_load_colors() {
 }
 
 /// Do a fading step within a frame, stepping colors by their step values.
-inline void band_fade_colors() {
+inline void leds_fade_colors() {
     // If this is the very last transition step,
     if (leds_transition_steps && leds_transition_index == leds_transition_steps-1) {
         // hit the destination:
@@ -106,20 +109,23 @@ inline void band_fade_colors() {
     }
 }
 
+#define LED_OFFSET 1
+#define RGB_OFFSET 0
+
 /// Actually apply the appropriate colors to our grayscale values.
 /**
  ** This also handles special cases, like twinkling.
  **/
-void leds_set_gs(const rgbcolor16_t* band_colors) {
+void leds_set_gs(const rgbcolor16_t* colors) {
     static uint_fast32_t r = 0;
     static uint_fast32_t g = 0;
     static uint_fast32_t b = 0;
 
     for (uint8_t stoplight_index = 0; stoplight_index < LED_COUNT; stoplight_index++)
     {
-        r = band_colors[stoplight_index].red << current_ambient_correct;
-        g = band_colors[stoplight_index].green << current_ambient_correct;
-        b = band_colors[stoplight_index].blue << current_ambient_correct;
+        r = colors[stoplight_index].red << current_ambient_correct;
+        g = colors[stoplight_index].green << current_ambient_correct;
+        b = colors[stoplight_index].blue << current_ambient_correct;
 
         if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
             if (leds_twinkle_bits & (1 << stoplight_index)) {
@@ -133,9 +139,9 @@ void leds_set_gs(const rgbcolor16_t* band_colors) {
         if (g>UINT16_MAX) g=UINT16_MAX;
         if (b>UINT16_MAX) b=UINT16_MAX;
 
-        tlc_gs_data[3+1+(3-stoplight_index)*3] = b;
-        tlc_gs_data[3+2+(3-stoplight_index)*3] = g;
-        tlc_gs_data[3+3+(3-stoplight_index)*3] = r;
+        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 0] = b;
+        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 1] = g;
+        tlc_gs_data[LED_OFFSET + ((RGB_OFFSET + stoplight_index * 3) % (LED_COUNT * 3)) + 2] = r;
     }
 }
 
@@ -251,7 +257,7 @@ void leds_timestep() {
                 leds_next_anim_frame();
                 leds_dirty = 1;
             } else {
-                band_fade_colors();
+                leds_fade_colors();
                 leds_dirty = 1;
             }
         }
