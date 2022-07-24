@@ -10,12 +10,12 @@
 
 #include <stdint.h>
 
-#define LED_COUNT 4
-#define LEGS_DUR_STEP 14
+#define LED_COUNT 5
+#define TICKS_PER_LED_ANIM_DUR 10 // Number of system ticks per unit of duration in animations.
 
-#define BAND_TWINKLE_STEPS_FAST 100
-#define BAND_TWINKLE_STEPS_SLOW 400
-#define BAND_TWINKLE_STEPS_HARD 14
+#define LEDS_TWINKLE_STEPS_FAST 100
+#define LEDS_TWINKLE_STEPS_SLOW 400
+#define LEDS_TWINKLE_STEPS_HARD 14
 
 typedef struct {
     uint16_t red;
@@ -42,7 +42,6 @@ typedef struct {
     const uint16_t *fade_durs;
     uint8_t len;
     uint8_t anim_type;
-    uint8_t boop_loops;
 } leds_animation_t;
 
 extern uint8_t current_ambient_correct;

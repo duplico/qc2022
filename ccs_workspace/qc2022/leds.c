@@ -14,35 +14,32 @@
 #include "tlc5948a.h"
 
 #include "leds.h"
-#include "band_anims.h"
+#include "animations.h"
 
-/*
- * The LED order is RIGHT TO LEFT. So, gs[0] is the rightmost LED,
- *  gs[3] is the leftmost, and gs[4] is the HEART!
- */
+#define LED_OFFSET 1
+#define RGB_OFFSET 1
+#define RED_OFFSET 2
+#define GRN_OFFSET 1
+#define BLU_OFFSET 0
 
-const rgbcolor16_t band_off[LED_COUNT] = {
+rgbcolor16_t leds_colors_curr[LED_COUNT] = {
+        {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
 };
 
-rgbcolor16_t band_colors_curr[LED_COUNT] = {
+rgbcolor16_t leds_colors_next[LED_COUNT] = {
         {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-        {0, 0, 0},
-};
-
-rgbcolor16_t band_colors_next[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
 };
 
-rgbdelta_t band_colors_step[LED_COUNT] = {
+rgbdelta_t leds_colors_step[LED_COUNT] = {
+        {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
         {0, 0, 0},
@@ -78,42 +75,42 @@ void leds_load_colors() {
 
     // Stage in the current color:
     for (uint8_t i=0; i<LED_COUNT; i++) {
-        band_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red * 5;
-        band_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green * 5;
-        band_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue * 5;
+        leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red * 5;
+        leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green * 5;
+        leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue * 5;
 
         // Stage in the next color:
         // If we're looping, it's modded. If not looping, back to black.
         if (leds_anim_frame == leds_current_anim->len-1 && !(leds_anim_looping || leds_is_ambient)) {
-            band_colors_next[i].red = 0;
-            band_colors_next[i].green = 0;
-            band_colors_next[i].blue = 0;
+            leds_colors_next[i].red = 0;
+            leds_colors_next[i].green = 0;
+            leds_colors_next[i].blue = 0;
         } else {
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
-            band_colors_next[i].red = leds_current_anim->colors[next_id][i].red * 5;
-            band_colors_next[i].green = leds_current_anim->colors[next_id][i].green * 5;
-            band_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue * 5;
+            leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red * 5;
+            leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green * 5;
+            leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue * 5;
         }
 
-        band_colors_step[i].red = ((int_fast32_t) band_colors_next[i].red - band_colors_curr[i].red) / leds_transition_steps;
-        band_colors_step[i].green = ((int_fast32_t) band_colors_next[i].green - band_colors_curr[i].green) / leds_transition_steps;
-        band_colors_step[i].blue = ((int_fast32_t) band_colors_next[i].blue - band_colors_curr[i].blue) / leds_transition_steps;
+        leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
+        leds_colors_step[i].green = ((int_fast32_t) leds_colors_next[i].green - leds_colors_curr[i].green) / leds_transition_steps;
+        leds_colors_step[i].blue = ((int_fast32_t) leds_colors_next[i].blue - leds_colors_curr[i].blue) / leds_transition_steps;
     }
 }
 
 /// Do a fading step within a frame, stepping colors by their step values.
-inline void band_fade_colors() {
+inline void leds_fade_colors() {
     // If this is the very last transition step,
     if (leds_transition_steps && leds_transition_index == leds_transition_steps-1) {
         // hit the destination:
-        memcpy(band_colors_curr, band_colors_next,
+        memcpy(leds_colors_curr, leds_colors_next,
                sizeof(rgbcolor_t) * LED_COUNT);
     } else {
         for (uint8_t i = 0; i < LED_COUNT; i++)
         {
-            band_colors_curr[i].red += band_colors_step[i].red;
-            band_colors_curr[i].green += band_colors_step[i].green;
-            band_colors_curr[i].blue += band_colors_step[i].blue;
+            leds_colors_curr[i].red += leds_colors_step[i].red;
+            leds_colors_curr[i].green += leds_colors_step[i].green;
+            leds_colors_curr[i].blue += leds_colors_step[i].blue;
         }
     }
 }
@@ -122,16 +119,16 @@ inline void band_fade_colors() {
 /**
  ** This also handles special cases, like twinkling.
  **/
-void leds_set_gs(const rgbcolor16_t* band_colors) {
+void leds_set_gs(const rgbcolor16_t* colors) {
     static uint_fast32_t r = 0;
     static uint_fast32_t g = 0;
     static uint_fast32_t b = 0;
 
     for (uint8_t stoplight_index = 0; stoplight_index < LED_COUNT; stoplight_index++)
     {
-        r = band_colors[stoplight_index].red << current_ambient_correct;
-        g = band_colors[stoplight_index].green << current_ambient_correct;
-        b = band_colors[stoplight_index].blue << current_ambient_correct;
+        r = colors[stoplight_index].red << current_ambient_correct;
+        g = colors[stoplight_index].green << current_ambient_correct;
+        b = colors[stoplight_index].blue << current_ambient_correct;
 
         if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
             if (leds_twinkle_bits & (1 << stoplight_index)) {
@@ -145,16 +142,16 @@ void leds_set_gs(const rgbcolor16_t* band_colors) {
         if (g>UINT16_MAX) g=UINT16_MAX;
         if (b>UINT16_MAX) b=UINT16_MAX;
 
-        tlc_gs_data[3+1+(3-stoplight_index)*3] = b;
-        tlc_gs_data[3+2+(3-stoplight_index)*3] = g;
-        tlc_gs_data[3+3+(3-stoplight_index)*3] = r;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + RED_OFFSET] = r;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + GRN_OFFSET] = g;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + BLU_OFFSET] = b;
     }
 }
 
 void leds_set_steps_and_go() {
-    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / LEGS_DUR_STEP;
+    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
     leds_hold_index = 0;
-    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / LEGS_DUR_STEP;
+    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
     leds_transition_index = 0;
 
     leds_load_colors();
@@ -186,7 +183,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_anim_length = leds_current_anim->len;
 
     leds_set_steps_and_go();
-    leds_set_gs(band_colors_curr);
+    leds_set_gs(leds_colors_curr);
     leds_dirty = 1;
 }
 
@@ -199,7 +196,7 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
         return;
     }
 
-    leds_start_anim_by_struct(band_all_anims[anim_id], loop, ambient);
+    leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
 
     leds_anim_id = anim_id;
 }
@@ -233,14 +230,13 @@ void leds_timestep() {
         leds_dirty = 1;
     }
 
-    // Handle the band:
     //  Apply our current delta animation timestep.
     if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
         uint16_t target_index;
         if (leds_current_anim->anim_type == ANIM_TYPE_FASTTWINKLE)
-            target_index = BAND_TWINKLE_STEPS_FAST/LEGS_DUR_STEP;
+            target_index = LEDS_TWINKLE_STEPS_FAST/TICKS_PER_LED_ANIM_DUR;
         else
-            target_index = BAND_TWINKLE_STEPS_SLOW/LEGS_DUR_STEP;
+            target_index = LEDS_TWINKLE_STEPS_SLOW/TICKS_PER_LED_ANIM_DUR;
 
         if (leds_anim_adjustment_index == target_index) {
             leds_twinkle_bits = rand() % 256;
@@ -263,14 +259,14 @@ void leds_timestep() {
                 leds_next_anim_frame();
                 leds_dirty = 1;
             } else {
-                band_fade_colors();
+                leds_fade_colors();
                 leds_dirty = 1;
             }
         }
     }
 
     if (leds_dirty) {
-        leds_set_gs(band_colors_curr);
+        leds_set_gs(leds_colors_curr);
     }
 
     // If the LEDs were updated...
