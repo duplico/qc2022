@@ -16,7 +16,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .initialized = 0,
     .clock_authority = 0,
     .badges_seen = {0,},
-    .current_anim_id = 4,
+    .current_anim_id = 0,
     .badges_seen_count = 0,
     .ubers_seen_count = 0,
 };
@@ -30,7 +30,7 @@ void next_animation() {
 
     do {
         candidate +=1;
-        if (candidate == ANIM_COUNT)
+        if (candidate >= ANIM_COUNT)
             candidate = 0;
     } while (!anim_unlocked(candidate));
 
