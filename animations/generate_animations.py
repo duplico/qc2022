@@ -22,7 +22,7 @@ color_corrections = {
     "fadered" : (15, 0, 0),
 }
 
-LED_COUNT = 4
+LED_COUNT = 5
 HOLD_DUR_INDEX = LED_COUNT
 FADE_DUR_INDEX = LED_COUNT+1
 
