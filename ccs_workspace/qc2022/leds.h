@@ -13,9 +13,9 @@
 #define LED_COUNT 5
 #define TICKS_PER_LED_ANIM_DUR 10 // Number of system ticks per unit of duration in animations.
 
-#define BAND_TWINKLE_STEPS_FAST 100
-#define BAND_TWINKLE_STEPS_SLOW 400
-#define BAND_TWINKLE_STEPS_HARD 14
+#define LEDS_TWINKLE_STEPS_FAST 100
+#define LEDS_TWINKLE_STEPS_SLOW 400
+#define LEDS_TWINKLE_STEPS_HARD 14
 
 typedef struct {
     uint16_t red;
