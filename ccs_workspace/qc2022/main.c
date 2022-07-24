@@ -155,28 +155,6 @@ void init_io() {
     PM5CTL0 &= ~LOCKLPM5;
 }
 
-/// Initialize the timer for the time loop.
-void init_timers() {
-    // For our timer, we're going to use ACLK, which is sourced from REFO.
-    //  (REFO is 32k)
-    // We'd like to have this run at like 60-100 Hz, I think.
-    // We'll divide our 32k clock by 64 to get 512 Hz.
-    // Then, we'll use a period of 8 to get 64ish frames per second.
-    Timer_A_initUpModeParam next_channel_timer_init = {};
-    next_channel_timer_init.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
-    next_channel_timer_init.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;
-    next_channel_timer_init.timerPeriod = 32;
-    next_channel_timer_init.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
-    next_channel_timer_init.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE;
-    next_channel_timer_init.timerClear = TIMER_A_SKIP_CLEAR;
-    next_channel_timer_init.startTimer = false;
-
-    // TIMER_A1_BASE is T1A3, which is what we want.
-
-    Timer_A_initUpMode(TIMER_A1_BASE, &next_channel_timer_init);
-    Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
-}
-
 void button_cb(tSensor *pSensor) {
     if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
     {
@@ -200,7 +178,6 @@ int main(void) {
     // Configure board basics:
     init_clocks();
     init_io();
-    init_timers();
 
     // Enable interrupts.
     __bis_SR_register(GIE);
@@ -259,25 +236,4 @@ int main(void) {
 
         __bis_SR_register(LPM0_bits);
     } // End background loop
-}
-
-// NB: In the Timer ISRs, for historical reasons, the vectors are named
-//      in a confusing way.
-//
-// **** TL;DR: Timer A0 is TIMER0_A0_xxx; Timer A1 is TIMER1_A0_xxx.
-//
-//     This is, apparently, because originally devices only had a single
-//      Timer A, Timer B, etc. So, the CCR registers' index determined
-//      the major number: TIMER_A0 (Timer A, CCR0); TIMER_A1 (Timer A, CCR1),
-//      etc. But now, devices like this one have multiple Timer As. So,
-//      the naming convention must be Timer0_A... for Timer A0, and
-//      Timer1_A... for A1, etc.
-//     Anyway, that's why it looks like this.
-
-// Dedicated ISR for T1A3 CCR0. Vector is cleared on service.
-#pragma vector=TIMER1_A0_VECTOR
-__interrupt void TIMER1_A3_ISR_HOOK(void)
-{
-    f_time_loop = 1;
-    LPM0_EXIT;
 }
