@@ -142,9 +142,9 @@ void leds_set_gs(const rgbcolor16_t* colors) {
         if (g>UINT16_MAX) g=UINT16_MAX;
         if (b>UINT16_MAX) b=UINT16_MAX;
 
-        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + RED_OFFSET] = b;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + RED_OFFSET] = r;
         tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + GRN_OFFSET] = g;
-        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + BLU_OFFSET] = r;
+        tlc_gs_data[LED_OFFSET + (((RGB_OFFSET + stoplight_index) * 3) % (LED_COUNT * 3)) + BLU_OFFSET] = b;
     }
 }
 
