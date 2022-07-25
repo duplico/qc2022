@@ -23,7 +23,6 @@ volatile uint8_t serial_phy_index_tx; // Initialized in ISR.
 
 volatile uint8_t f_serial_phy = 0;
 
-uint16_t connected_badge_id; // initialized in code
 uint8_t serial_ll_state; // initialized in code
 uint16_t serial_ll_timeout_ticks; // initialized in code
 
@@ -155,7 +154,7 @@ void serial_ll_enter_state(uint8_t new_state) {
     case SERIAL_LL_STATE_C:
         serial_ll_timeout_ticks = SERIAL_C_TIMEOUT_TICKS;
         if (old_state != new_state) {
-            __no_operation();
+            badge_set_seen(serial_message_in.from_id);
         }
         break;
     case SERIAL_LL_STATE_BLOCK:

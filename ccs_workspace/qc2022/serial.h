@@ -53,8 +53,6 @@ extern volatile uint8_t serial_phy_state;
 extern volatile serial_message_t serial_message_in;
 extern serial_message_t serial_message_out;
 extern uint8_t serial_ll_state;
-extern uint16_t connected_badge_id;
-extern uint8_t connected_badge_type;
 
 // Functions
 void serial_tick();

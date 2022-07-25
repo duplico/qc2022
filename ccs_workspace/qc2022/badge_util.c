@@ -19,12 +19,16 @@ uint8_t check_id_buf(uint8_t id, uint8_t *buf) {
 }
 
 /// In a standard buffer of bitfields, set ``id``'s bit.
-void set_id_buf(uint8_t id, uint8_t *buf) {
+void set_id_buf(uint8_t id, uint8_t value, uint8_t *buf) {
     uint8_t byte;
     uint8_t bit;
     byte = id / 8;
     bit = id % 8;
-    buf[byte] |= (0x01 << bit);
+    if (value) {
+        buf[byte] |= (0x01 << bit);
+    } else {
+        buf[byte] &= ~(0x01 << bit);
+    }
 }
 
 /// Counts the bits set in a byte and return the total.

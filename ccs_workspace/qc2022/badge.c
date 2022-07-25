@@ -56,36 +56,48 @@ void next_animation() {
 }
 
 /// Mark a badge as seen, returning 1 if it's a new badge or 2 if a new uber.
-uint8_t set_badge_seen(uint8_t id) {
+void badge_set_seen(uint8_t id) {
     if (id >= 8*BADGES_SEEN_BUFFER_LEN_BYTES) {
-        return 0; // Invalid ID.
+        return; // Invalid ID.
     }
 
     uint8_t seen = check_id_buf(id, badge_conf.badges_seen);
 
     if (seen) {
-        return 0;
+        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+        return;
     }
 
     // New badge!
     fram_unlock();
 
-    set_id_buf(id, badge_conf.badges_seen);
+    set_id_buf(id, 2, badge_conf.badges_seen);
+
+    badge_conf.badges_seen_count++;
+    // TODO: badge count unlocks.
 
     if (is_uber(id)) {
         badge_conf.ubers_seen_count++;
+        // TODO: uber count unlocks.
     }
-    badge_conf.badges_seen_count++;
 
     fram_lock();
 
-    return is_uber(id)? 2: 1;
+    if (is_uber(id)) {
+        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
+    } else {
+
+    }
 }
 
 /// Set badge ID in the configuration.
 void badge_set_id(uint8_t id) {
+    uint8_t old_id = badge_conf.badge_id;
+
     fram_unlock();
     badge_conf.badge_id = id;
+    set_id_buf(old_id, 0, badge_conf.badges_seen);
+    set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
     fram_lock();
 }
 
@@ -95,4 +107,21 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
+}
+
+void badge_button_press_long() {
+    leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+}
+
+void badge_button_press_short() {
+    next_animation();
+}
+
+/// Initialize the badge.
+void badge_init() {
+    if (badge_conf.initialized) {
+        // We've had a config set before. Just check some things.
+    } else {
+        // This is our first time turning on.
+    }
 }

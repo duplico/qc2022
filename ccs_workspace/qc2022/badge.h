@@ -53,7 +53,7 @@ extern volatile uint8_t f_long_press;
 
 // Utility functions:
 uint8_t check_id_buf(uint8_t id, uint8_t *buf);
-void set_id_buf(uint8_t id, uint8_t *buf);
+void set_id_buf(uint8_t id, uint8_t value, uint8_t *buf);
 uint8_t byte_rank(uint8_t v);
 uint16_t buffer_rank(uint8_t *buf, uint8_t len);
 uint8_t is_uber(uint8_t id);
@@ -61,5 +61,9 @@ uint8_t anim_unlocked(uint8_t id);
 void next_animation();
 void badge_set_id(uint8_t id);
 inline void badge_set_time(uint32_t clock, uint8_t authority);
+void badge_set_seen(uint8_t id);
+void badge_button_press_long();
+void badge_button_press_short();
+void badge_init();
 
 #endif /* BADGE_H_ */
