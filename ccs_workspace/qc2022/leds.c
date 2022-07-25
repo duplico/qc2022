@@ -71,8 +71,6 @@ uint16_t leds_anim_adjustment_index = 0;
 
 /// Start a new frame, setting up current, source, dest, and step.
 void leds_load_colors() {
-    // leg_colors_curr <- tentacle_current_anim[tentacle_anim_index]
-
     // Stage in the current color:
     for (uint8_t i=0; i<LED_COUNT; i++) {
         leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red * 5;
