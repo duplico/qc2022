@@ -79,7 +79,7 @@ void badge_set_seen(uint8_t id) {
     uint8_t seen = check_id_buf(id, badge_conf.badges_seen);
 
     if (seen) {
-        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_PAIR, 10, 0);
         return;
     }
 
@@ -100,9 +100,9 @@ void badge_set_seen(uint8_t id) {
 
     // TODO:
     if (is_uber(id)) {
-        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWUBER, 0, 0);
     } else {
-        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
     }
 }
 
@@ -121,12 +121,14 @@ void badge_set_id(uint8_t id) {
 
 /// Set the current time.
 inline void badge_set_time(uint32_t clock, uint8_t authority) {
+    if (authority != badge_conf.clock_authority) {
+        // If our authority is changing, acknowledge it.
+        leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
+    }
     fram_unlock();
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
-
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
 }
 
 void badge_button_press_long() {
@@ -157,4 +159,5 @@ void badge_init() {
     }
 
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
+    leds_start_anim_by_id(ANIM_META_STARTUP, 0, 0);
 }
