@@ -163,7 +163,7 @@ void tlc_init() {
 
     TA0CTL = MC__STOP; // Make sure the timer is stopped.
     TA0CCR0 = 1; // Reset timer at 1
-    TA0CCTL1 = OUTMOD_7; // Reset/Set mode.
+    TA0CCTL1 = OUTMOD_4; // Toggle mode.
     TA0CCR1 = 1; // Toggle our output at 1
     TA0CTL = TASSEL__SMCLK|MC_1; // Start it in up mode based on an undivided SMCLK.
 }
