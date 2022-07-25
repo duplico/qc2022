@@ -121,12 +121,14 @@ void badge_set_id(uint8_t id) {
 
 /// Set the current time.
 inline void badge_set_time(uint32_t clock, uint8_t authority) {
+    if (authority != badge_conf.clock_authority) {
+        // If our authority is changing, acknowledge it.
+        leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
+    }
     fram_unlock();
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
-
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
 }
 
 void badge_button_press_long() {
