@@ -115,6 +115,8 @@ void badge_set_id(uint8_t id) {
     set_id_buf(old_id, 0, badge_conf.badges_seen);
     set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
     fram_lock();
+
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 0, 0);
 }
 
 /// Set the current time.
