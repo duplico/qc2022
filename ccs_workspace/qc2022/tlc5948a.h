@@ -24,15 +24,14 @@
 #define TLC_SEND_TYPE_FUN 2
 #define TLC_SEND_TYPE_LB  3
 
-void tlc_init();
-
-uint8_t tlc_test_loopback(uint8_t);
-
-void tlc_set_gs();
-void tlc_set_fun();
-void tlc_stage_blank(uint8_t);
-
 extern uint8_t tlc_send_type;
 extern uint16_t tlc_gs_data[16];
+
+void tlc_init();
+uint8_t tlc_test_loopback(uint8_t);
+void tlc_set_gs();
+void tlc_set_fun();
+void tlc_stage_bc(uint8_t bc);
+void tlc_stage_blank(uint8_t);
 
 #endif /* TLC5948A_H_ */
