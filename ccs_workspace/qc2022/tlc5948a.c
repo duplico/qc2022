@@ -14,16 +14,8 @@
 
 /*
  *   LED controller (TLC5948A)
- *        eUSCI_A0 - LEDs
- *        (write on rise, change on fall,
- *         clock inactive low, MSB first)
- *        somi, miso, clk (3-wire)
- *        GSCLK     P1.2 (timer TA1.1)
- *        LAT       P1.4
- *
  *   This file's job is to keep the display going. Application logic will go
  *   elsewhere - this is strictly a driver.
- *
  */
 
 #define TLC_THISISGS    0x00
