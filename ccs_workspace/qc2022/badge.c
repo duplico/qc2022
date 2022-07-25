@@ -123,6 +123,8 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
+
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
 }
 
 void badge_button_press_long() {

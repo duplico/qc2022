@@ -132,6 +132,24 @@ void serial_ll_handle_rx() {
     // NB: All structural and opcode-specific (but not state-specific)
     //     validation has already been done. Any ACK has already been
     //     checked against the expected sequence number.
+
+    // Deal with clock setting first and foremost.
+    // We accept another badge's clock under the following conditions:
+    if (!badge_conf.clock_authority && serial_message_in.clock_is_set) {
+        //  * Our clock is not authoritative, and the other clock is.
+        //    (in this case, our clock is then set to authoritative)
+        badge_set_time(serial_message_in.last_clock, 1);
+    } else if (badge_conf.clock_authority == serial_message_in.clock_is_set &&
+               serial_message_in.last_clock > badge_conf.clock + BADGE_CLOCK_DRIFT_ALLOWED_SECONDS) {
+        //  * Both clocks' authoritative-ness is the same (i.e. both are
+        //     authoritative, or both are non-authoritative), but the other
+        //     clock is at least BADGE_CLOCK_DRIFT_ALLOWED_SECONDS in the future.
+        //     (in this case, our authoritative-ness is unchanged)
+        badge_set_time(serial_message_in.last_clock, badge_conf.clock_authority);
+    }
+
+    // Now do other needed stuff. If these generate animations, they'll replace any
+    //  that the clocks set off.
     switch(serial_message_in.opcode) {
     case SERIAL_OPCODE_SETID:
         badge_set_id((uint8_t) (0xff & serial_message_in.payload));
@@ -150,21 +168,6 @@ void serial_ll_handle_rx() {
     case SERIAL_OPCODE_ACK:
         badge_set_seen(serial_message_in.from_id);
         break;
-    }
-
-    // Now handle clock setting.
-    // We accept another badge's clock under the following conditions:
-    if (!badge_conf.clock_authority && serial_message_in.clock_is_set) {
-        //  * Our clock is not authoritative, and the other clock is.
-        //    (in this case, our clock is then set to authoritative)
-        badge_set_time(serial_message_in.last_clock, 1);
-    } else if (badge_conf.clock_authority == serial_message_in.clock_is_set &&
-               serial_message_in.last_clock > badge_conf.clock + BADGE_CLOCK_DRIFT_ALLOWED_SECONDS) {
-        //  * Both clocks' authoritative-ness is the same (i.e. both are
-        //     authoritative, or both are non-authoritative), but the other
-        //     clock is at least BADGE_CLOCK_DRIFT_ALLOWED_SECONDS in the future.
-        //     (in this case, our authoritative-ness is unchanged)
-        badge_set_time(serial_message_in.last_clock, badge_conf.clock_authority);
     }
 }
 
