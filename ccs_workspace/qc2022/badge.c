@@ -10,7 +10,7 @@
 #include <msp430fr2633.h>
 
 #include "badge.h"
-
+#include "rtc.h"
 #include "animations.h"
 
 #pragma PERSISTENT(badge_conf)
@@ -57,9 +57,23 @@ void next_animation() {
 
 /// Mark a badge as seen, returning 1 if it's a new badge or 2 if a new uber.
 void badge_set_seen(uint8_t id) {
+    static uint8_t last_badge_seen = 255;
+    static uint32_t last_badge_seen_time = 0;
+
     if (id >= 8*BADGES_SEEN_BUFFER_LEN_BYTES) {
         return; // Invalid ID.
     }
+
+    if (
+            last_badge_seen_time && // If we've set the last seen time...
+            rtc_seconds < last_badge_seen_time + BADGE_PAIR_COOLDOWN  && // And it's before our cooldown period...
+            id == last_badge_seen // And we're seeing the same badge
+    ) {
+        return; // Ignore it.
+    }
+
+    last_badge_seen = id;
+    last_badge_seen_time = rtc_seconds;
 
     uint8_t seen = check_id_buf(id, badge_conf.badges_seen);
 
@@ -83,10 +97,11 @@ void badge_set_seen(uint8_t id) {
 
     fram_lock();
 
+    // TODO:
     if (is_uber(id)) {
         leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
     } else {
-
+        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
     }
 }
 
