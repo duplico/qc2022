@@ -2,7 +2,6 @@
 1 firebrick
 2 white
 3 Goldenrod
-4 white
 5 lightseagreen
 6 purple
 
