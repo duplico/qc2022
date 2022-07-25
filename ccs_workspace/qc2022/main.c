@@ -156,18 +156,21 @@ void init_io() {
 }
 
 void button_cb(tSensor *pSensor) {
+
     if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
     {
         // Button press
         button_state = 1;
-        next_animation();
+        rtc_button_csecs = rtc_centiseconds;
     }
 
     if((pSensor->bSensorTouch == false) && (pSensor->bSensorPrevTouch == true))
     {
         // Button release
+        if (button_state == 1) {
+            badge_button_press_short();
+        }
         button_state = 0;
-        __no_operation();
     }
 }
 
@@ -186,6 +189,8 @@ int main(void) {
     rtc_init();
     tlc_init();
     serial_init();
+
+    badge_init();
 
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
 
@@ -225,6 +230,8 @@ int main(void) {
 
         if (f_long_press) {
             f_long_press = 0;
+            button_state = 2;
+            badge_button_press_long();
         }
 
         // Check whether CapTIvate needs to be serviced.

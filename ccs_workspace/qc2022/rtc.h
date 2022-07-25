@@ -9,7 +9,9 @@
 #define RTC_H_
 
 /// Total number of seconds since badge activation.
-extern uint32_t rtc_seconds;
+extern volatile uint32_t rtc_seconds;
+extern volatile uint8_t rtc_centiseconds;
+extern uint8_t rtc_button_csecs;
 
 void rtc_init();
 
