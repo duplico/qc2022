@@ -22,6 +22,10 @@
 #define GRN_OFFSET 1
 #define BLU_OFFSET 0
 
+// With our offset configuration, LED index 0 is the top one,
+//  by the lanyard hole, they then go clockwise from there.
+
+/// Colors for the current animation frame.
 rgbcolor16_t leds_colors_curr[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
@@ -30,6 +34,7 @@ rgbcolor16_t leds_colors_curr[LED_COUNT] = {
         {0, 0, 0},
 };
 
+/// Colors for the next animation frame.
 rgbcolor16_t leds_colors_next[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
@@ -38,6 +43,7 @@ rgbcolor16_t leds_colors_next[LED_COUNT] = {
         {0, 0, 0},
 };
 
+/// The per-tick adjustment to colors between this frame and next for fading.
 rgbdelta_t leds_colors_step[LED_COUNT] = {
         {0, 0, 0},
         {0, 0, 0},
