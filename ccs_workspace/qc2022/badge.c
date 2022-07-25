@@ -157,4 +157,5 @@ void badge_init() {
     }
 
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
+    leds_start_anim_by_id(ANIM_META_STARTUP, 0, 0);
 }
