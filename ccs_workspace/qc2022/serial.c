@@ -151,6 +151,21 @@ void serial_ll_handle_rx() {
         badge_set_seen(serial_message_in.from_id);
         break;
     }
+
+    // Now handle clock setting.
+    // We accept another badge's clock under the following conditions:
+    if (!badge_conf.clock_authority && serial_message_in.clock_is_set) {
+        //  * Our clock is not authoritative, and the other clock is.
+        //    (in this case, our clock is then set to authoritative)
+        badge_set_time(serial_message_in.last_clock, 1);
+    } else if (badge_conf.clock_authority == serial_message_in.clock_is_set &&
+               serial_message_in.last_clock > badge_conf.clock + BADGE_CLOCK_DRIFT_ALLOWED_SECONDS) {
+        //  * Both clocks' authoritative-ness is the same (i.e. both are
+        //     authoritative, or both are non-authoritative), but the other
+        //     clock is at least BADGE_CLOCK_DRIFT_ALLOWED_SECONDS in the future.
+        //     (in this case, our authoritative-ness is unchanged)
+        badge_set_time(serial_message_in.last_clock, badge_conf.clock_authority);
+    }
 }
 
 void serial_ll_timeout() {
