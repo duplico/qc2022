@@ -20,6 +20,9 @@ color_corrections = {
     "b4" : (0xbe, 0xa6, 0x38),
     "dim" : (0, 0, 15),
     "fadered" : (15, 0, 0),
+    "bright1" : (15, 0, 0),
+    "bright2" : (15, 64, 0),
+    "bright3" : (15, 64, 255),
 }
 
 LED_COUNT = 5

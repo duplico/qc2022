@@ -12,6 +12,7 @@
 #include "badge.h"
 #include "rtc.h"
 #include "animations.h"
+#include "tlc5948a.h"
 
 #pragma PERSISTENT(badge_conf)
 badge_conf_t badge_conf = (badge_conf_t){
@@ -125,7 +126,18 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
 }
 
 void badge_button_press_long() {
-    leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+    static uint8_t brightness_level = 0;
+    uint8_t brightness_levels[3] = {
+        0,
+        64,
+        255
+    };
+
+    brightness_level = (brightness_level+1) % 3;
+    tlc_stage_bc(brightness_levels[brightness_level]);
+    tlc_set_fun();
+
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0);
 }
 
 void badge_button_press_short() {
