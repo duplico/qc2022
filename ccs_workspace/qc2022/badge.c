@@ -79,7 +79,7 @@ void badge_set_seen(uint8_t id) {
     uint8_t seen = check_id_buf(id, badge_conf.badges_seen);
 
     if (seen) {
-        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_PAIR, 10, 0);
         return;
     }
 
@@ -100,9 +100,9 @@ void badge_set_seen(uint8_t id) {
 
     // TODO:
     if (is_uber(id)) {
-        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWUBER, 0, 0);
     } else {
-        leds_start_anim_by_id(ANIM_META_PAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
     }
 }
 
