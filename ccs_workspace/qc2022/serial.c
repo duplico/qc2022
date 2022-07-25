@@ -23,7 +23,7 @@ volatile uint8_t serial_phy_index_tx; // Initialized in ISR.
 
 volatile uint8_t f_serial_phy = 0;
 
-uint8_t serial_ll_state; // initialized in code
+uint8_t serial_plugged = 0; // initialized in code
 uint16_t serial_ll_timeout_ticks; // initialized in code
 
 uint8_t serial_ll_tx_seq = 0;
@@ -85,10 +85,6 @@ uint8_t validate_message(serial_message_t *message) {
     case SERIAL_OPCODE_HELO:
         break;
     case SERIAL_OPCODE_ACK:
-        if (message->payload != serial_ll_tx_seq) {
-            // This is not ACKing the message we sent.
-            return 0;
-        }
         break;
     case SERIAL_OPCODE_SETID:
         if (message->payload > BADGES_IN_SYSTEM || message->from_id != CONTROLLER_ID) {
@@ -127,97 +123,41 @@ void serial_send_start(uint8_t opcode) {
     // The interrupts will take it from here.
 }
 
-void serial_ll_enter_state(uint8_t new_state) {
-    uint8_t old_state = serial_ll_state;
-    serial_ll_state = new_state;
-
-    switch(new_state) {
-    case SERIAL_LL_STATE_IDLE:
-        serial_ll_timeout_ticks = SERIAL_IDLE_TIMEOUT_TICKS;
-        break;
-    case SERIAL_LL_STATE_NC1:
-        serial_ll_timeout_ticks = SERIAL_NC_TIMEOUT_TICKS;
-        if (old_state == SERIAL_LL_STATE_IDLE) {
-            // If we're entering this state from idle, increment
-            //  our outgoing sequence number. Don't do this if it's
-            //  a re-transmit.
-            serial_ll_tx_seq++;
-        }
-        // Send a HELO message.
-        serial_send_start(SERIAL_OPCODE_HELO);
-        break;
-    case SERIAL_LL_STATE_NC2:
-        serial_ll_timeout_ticks = SERIAL_NC_TIMEOUT_TICKS;
-        // Send an ACK.
+void serial_ll_handle_rx() {
+    // NB: All structural and opcode-specific (but not state-specific)
+    //     validation has already been done. Any ACK has already been
+    //     checked against the expected sequence number.
+    switch(serial_message_in.opcode) {
+    case SERIAL_OPCODE_SETID:
+        badge_set_id((uint8_t) (0xff & serial_message_in.payload));
+        serial_ll_rx_seq = badge_conf.badge_id;
         serial_send_start(SERIAL_OPCODE_ACK);
         break;
-    case SERIAL_LL_STATE_C:
-        serial_ll_timeout_ticks = SERIAL_C_TIMEOUT_TICKS;
-        if (old_state != new_state) {
-            badge_set_seen(serial_message_in.from_id);
-        }
-        break;
-    case SERIAL_LL_STATE_BLOCK:
-        serial_ll_timeout_ticks = SERIAL_BLOCK_TIMEOUT_TICKS;
+    case SERIAL_OPCODE_HELO:
+        serial_ll_rx_seq = serial_message_in.payload;
+        serial_send_start(SERIAL_OPCODE_ACK);
+        // Fall through...
+    case SERIAL_OPCODE_ACK:
+        badge_set_seen(serial_message_in.from_id);
         break;
     }
 }
 
 void serial_ll_timeout() {
-    switch(serial_ll_state) {
-    case SERIAL_LL_STATE_BLOCK:
-        // If we're in BLOCK, a timeout sends us back to IDLE:
-        serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
-        break;
-    case SERIAL_LL_STATE_NC1:
-    case SERIAL_LL_STATE_NC2:
-    case SERIAL_LL_STATE_C:
-    case SERIAL_LL_STATE_IDLE:
-        // Otherwise, we re-enter the existing state:
-        serial_ll_enter_state(serial_ll_state);
-        break;
+    if (serial_plugged) {
+        serial_send_start(SERIAL_OPCODE_HELO);
     }
-}
 
-void serial_ll_handle_rx() {
-    // NB: All structural and opcode-specific (but not state-specific)
-    //     validation has already been done. Any ACK has already been
-    //     checked against the expected sequence number.
-
-    switch(serial_ll_state) {
-    case SERIAL_LL_STATE_IDLE:
-        // Expecting a SETID (handled here) or physical connection (handled elsewhere).
-        if (serial_message_in.opcode == SERIAL_OPCODE_SETID) {
-            // Set ID, send ACK, and stay idle:
-            badge_set_id((uint8_t) (0xff & serial_message_in.payload));
-            serial_ll_rx_seq = badge_conf.badge_id;
-            serial_send_start(SERIAL_OPCODE_ACK);
-        }
-        break;
-    case SERIAL_LL_STATE_NC1:
-        // Expecting a HELO.
-        if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
-            serial_ll_rx_seq = (uint8_t) (0xff & serial_message_in.payload);
-            serial_ll_enter_state(SERIAL_LL_STATE_NC2);
-        }
-        break;
-    case SERIAL_LL_STATE_NC2:
-        if (serial_message_in.opcode == SERIAL_OPCODE_ACK) {
-            serial_ll_enter_state(SERIAL_LL_STATE_C);
-        } else if (serial_message_in.opcode == SERIAL_OPCODE_HELO) {
-            serial_ll_rx_seq = (uint8_t) (0xff & serial_message_in.payload);
-            serial_ll_enter_state(SERIAL_LL_STATE_NC2);
-        }
-        break;
-    }
-    // In all other cases we ignore messages.
+    serial_ll_timeout_ticks = SERIAL_TIMEOUT_TICKS;
 }
 
 /// Handle the physical connection of two badges.
 void serial_phy_connect() {
-    // We got an O_HAI signal that looks good.
-    // Enter NC1:
-    serial_ll_enter_state(SERIAL_LL_STATE_NC1);
+    // We got an O_HAI signal.
+    serial_plugged = 1;
+    // After we return, the timeout will send for us.
+    serial_ll_timeout_ticks = 1;
+    serial_ll_tx_seq++;
 }
 
 /// Handle the physical disconnection of two badges.
@@ -225,16 +165,7 @@ void serial_phy_disconnect() {
     // PHY TX will handle its own business of shouting into space.
     // PHY RX needs to be set to idle.
     serial_phy_state_rx = SERIAL_PHY_STATE_IDLE;
-
-    // Determine whether we need to enter a blocking state to prevent
-    //  spurious reconnections during a just-connected animation:
-    if (serial_ll_state == SERIAL_LL_STATE_C) {
-        // Block if we had a good completed connection.
-        serial_ll_enter_state(SERIAL_LL_STATE_BLOCK);
-    } else {
-        // Otherwise, skip blocking and jump to idle.
-        serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
-    }
+    serial_plugged = 0;
 }
 
 void serial_phy_handle_rx() {
@@ -301,7 +232,7 @@ void serial_init() {
     serial_phy_state_rx = SERIAL_PHY_STATE_IDLE;
     serial_phy_state_tx = SERIAL_PHY_STATE_IDLE;
 
-    serial_ll_enter_state(SERIAL_LL_STATE_IDLE);
+    serial_ll_timeout_ticks = SERIAL_TIMEOUT_TICKS;
 
     // Enable interrupts for TX and RX:
     UCA1IE |= UCTXIE | UCRXIE;

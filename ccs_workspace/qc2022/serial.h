@@ -30,7 +30,12 @@
 #define SERIAL_PHY_STATE_RX 1
 #define SERIAL_PHY_STATE_TX 2
 
+#define SERIAL_TIMEOUT_TICKS 10
+
 #define SERIAL_IDLE_TIMEOUT_TICKS 500
+
+
+
 #define SERIAL_NC_TIMEOUT_TICKS 10
 #define SERIAL_C_TIMEOUT_TICKS 100
 #define SERIAL_BLOCK_TIMEOUT_TICKS 500
@@ -52,7 +57,7 @@ extern volatile uint8_t f_serial_phy;
 extern volatile uint8_t serial_phy_state;
 extern volatile serial_message_t serial_message_in;
 extern serial_message_t serial_message_out;
-extern uint8_t serial_ll_state;
+extern uint8_t serial_plugged;
 
 // Functions
 void serial_tick();
