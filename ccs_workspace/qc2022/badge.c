@@ -124,4 +124,6 @@ void badge_init() {
     } else {
         // This is our first time turning on.
     }
+
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
 }

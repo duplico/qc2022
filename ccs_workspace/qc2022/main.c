@@ -190,9 +190,8 @@ int main(void) {
     tlc_init();
     serial_init();
 
+    // Initialize badge data and game.
     badge_init();
-
-    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
 
     MAP_CAPT_initUI(&g_uiApp);
     MAP_CAPT_calibrateUI(&g_uiApp);
