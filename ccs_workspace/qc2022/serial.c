@@ -27,7 +27,7 @@ uint8_t serial_plugged = 0; // initialized in code
 uint16_t serial_ll_timeout_ticks; // initialized in code
 
 uint8_t serial_ll_tx_seq = 0;
-uint8_t serial_ll_rx_seq = 0;
+uint32_t serial_ll_rx_seq = 0;
 
 /// Calculate a 16-bit cyclic redundancy check on buffer sbuf of length len.
 uint16_t crc16_buf(volatile uint8_t *sbuf, uint8_t len) {
@@ -74,20 +74,25 @@ uint8_t validate_message(serial_message_t *message) {
         return 0;
     }
 
-    // Check that the from-address is valid
-    if (message->from_id != CONTROLLER_ID && message->from_id >= BADGES_IN_SYSTEM) {
-        // (highest valid badge ID is BADGES_IN_SYSTEM-1)
-        return 0;
-    }
-
     // Opcode-specific validation:
     switch(message->opcode) {
     case SERIAL_OPCODE_HELO:
-        break;
     case SERIAL_OPCODE_ACK:
+        if (message->from_id >= BADGES_IN_SYSTEM) {
+            // (highest valid badge ID is BADGES_IN_SYSTEM-1)
+            // A controller shouldn't send HELO or ACK.
+            return 0;
+        }
         break;
     case SERIAL_OPCODE_SETID:
-        if (message->payload > BADGES_IN_SYSTEM || message->from_id != CONTROLLER_ID) {
+        // Validate our incoming new ID.
+        if (message->payload > BADGES_IN_SYSTEM) {
+            return 0;
+        }
+    // Fall through...
+    case SERIAL_OPCODE_STATQ:
+        // Admin commands should only come from a controller.
+        if (message->from_id != CONTROLLER_ID) {
             return 0;
         }
         break;
@@ -131,6 +136,11 @@ void serial_ll_handle_rx() {
     case SERIAL_OPCODE_SETID:
         badge_set_id((uint8_t) (0xff & serial_message_in.payload));
         serial_ll_rx_seq = badge_conf.badge_id;
+        serial_send_start(SERIAL_OPCODE_ACK);
+        break;
+    case SERIAL_OPCODE_STATQ:
+        // TODO: any other special unlocks.
+        serial_ll_rx_seq = ((uint32_t) badge_conf.badges_seen_count) | ((uint32_t) badge_conf.ubers_seen_count << 8);
         serial_send_start(SERIAL_OPCODE_ACK);
         break;
     case SERIAL_OPCODE_HELO:

@@ -15,15 +15,9 @@
 #define SERIAL_OPCODE_HELO      0x01
 #define SERIAL_OPCODE_ACK       0x02
 #define SERIAL_OPCODE_SETID     0x0C
+#define SERIAL_OPCODE_STATQ     0x0D
 
 #define SERIAL_RX_DONE 1
-
-// Serial LL (link-layer) state machine states:
-#define SERIAL_LL_STATE_IDLE 0
-#define SERIAL_LL_STATE_NC1 1
-#define SERIAL_LL_STATE_NC2 2
-#define SERIAL_LL_STATE_C 3
-#define SERIAL_LL_STATE_BLOCK 4
 
 // Serial PHY states and configuration:
 #define SERIAL_PHY_STATE_IDLE 0
@@ -31,14 +25,6 @@
 #define SERIAL_PHY_STATE_TX 2
 
 #define SERIAL_TIMEOUT_TICKS 10
-
-#define SERIAL_IDLE_TIMEOUT_TICKS 500
-
-
-
-#define SERIAL_NC_TIMEOUT_TICKS 10
-#define SERIAL_C_TIMEOUT_TICKS 100
-#define SERIAL_BLOCK_TIMEOUT_TICKS 500
 
 // Types and structs
 typedef struct {
