@@ -44,7 +44,7 @@ typedef struct {
     uint8_t anim_type;
 } leds_animation_t;
 
-extern uint8_t current_ambient_correct;
+extern uint8_t leds_is_ambient;
 
 void leds_timestep();
 void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient);

@@ -153,7 +153,9 @@ void badge_button_press_long() {
 }
 
 void badge_button_press_short() {
-    next_animation();
+    if (leds_is_ambient) {
+        next_animation();
+    }
 }
 
 /// Initialize the badge.
