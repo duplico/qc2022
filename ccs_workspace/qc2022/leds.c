@@ -59,7 +59,7 @@ uint8_t led_animation_state = 0;
 
 uint8_t leds_anim_frame;
 uint8_t leds_anim_id;
-uint8_t leds_saved_anim_id;
+uint8_t leds_ambient_anim_id;
 uint8_t leds_is_ambient = 1;
 uint8_t leds_anim_looping;
 uint8_t leds_anim_length;
@@ -168,7 +168,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     // If we've been asked to do an interrupting animation, remember what our ambient anim
     //  was so we can go back to it.
     if (!ambient && leds_is_ambient) {
-        leds_saved_anim_id = leds_anim_id;
+        leds_ambient_anim_id = leds_anim_id;
     }
 
     leds_is_ambient = ambient;
@@ -193,7 +193,7 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
         // If we've been asked to switch our ambient animation, but we're currently in an
         //  interrupting animation, we need to change what we have saved so we go back to
         //  the new ambient animation.
-        leds_saved_anim_id = anim_id;
+        leds_ambient_anim_id = anim_id;
         return;
     }
 
@@ -214,7 +214,7 @@ void leds_next_anim_frame() {
             leds_anim_looping--;
         } else { // not ambient, no loops remaining
             leds_is_ambient = 1; // Now we're back to being ambient...
-            leds_start_anim_by_id(leds_saved_anim_id, 0, 1);
+            leds_start_anim_by_id(leds_ambient_anim_id, 0, 1);
             return; // skip the transitions_and_go because that's called in start_anim.
         }
     }
