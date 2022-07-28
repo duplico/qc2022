@@ -81,6 +81,15 @@ void tlc_set_fun() {
     EUSCI_A_SPI_transmitData(EUSCI_A0_BASE, TLC_THISISFUN);
 }
 
+// Stage global brightness if different from default:
+void tlc_stage_dc_mult(uint8_t mult) {
+    for (uint8_t i=0; i<15; i+=3) {
+        fun_base[19+i + 0] = TLC_DC_BLU * mult;
+        fun_base[19+i + 1] = TLC_DC_GRN * mult;
+        fun_base[19+i + 2] = TLC_DC_RED * mult;
+    }
+}
+
 // Stage the blank bit:
 void tlc_stage_blank(uint8_t blank) {
     if (blank) {
@@ -148,6 +157,7 @@ void tlc_init() {
 
     // Stage an un-blank configuration to the function data:
     tlc_stage_blank(0);
+    tlc_stage_dc_mult(1);
 
     // Send our initial function data:
     tlc_set_fun();

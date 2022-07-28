@@ -141,6 +141,7 @@ void badge_button_press_long() {
 
     brightness_level = (brightness_level+1) % 3;
     tlc_stage_bc(brightness_levels[brightness_level]);
+    tlc_stage_dc_mult(brightness_level+1);
     tlc_set_fun();
 
     leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0);
@@ -158,6 +159,7 @@ void badge_init() {
         // This is our first time turning on.
     }
 
-    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
-    leds_start_anim_by_id(ANIM_META_STARTUP, 0, 0);
+    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0);
+    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 0, 1);
+    //    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1); // TODO
 }

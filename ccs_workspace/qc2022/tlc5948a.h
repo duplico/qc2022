@@ -31,6 +31,7 @@ void tlc_init();
 uint8_t tlc_test_loopback(uint8_t);
 void tlc_set_gs();
 void tlc_set_fun();
+void tlc_stage_dc_mult(uint8_t mult);
 void tlc_stage_bc(uint8_t bc);
 void tlc_stage_blank(uint8_t);
 

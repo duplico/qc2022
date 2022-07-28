@@ -69,9 +69,6 @@ uint16_t leds_transition_steps;
 uint16_t leds_transition_index;
 const leds_animation_t *leds_current_anim;
 
-uint8_t current_ambient_correct;
-uint8_t previous_ambient_correct;
-
 uint8_t leds_twinkle_bits = 0xea;
 uint16_t leds_anim_adjustment_index = 0;
 
@@ -79,9 +76,9 @@ uint16_t leds_anim_adjustment_index = 0;
 void leds_load_colors() {
     // Stage in the current color:
     for (uint8_t i=0; i<LED_COUNT; i++) {
-        leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red * 5;
-        leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green * 5;
-        leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue * 5;
+        leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red << 8;
+        leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green << 8;
+        leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue << 8;
 
         // Stage in the next color:
         // If we're looping, it's modded. If not looping, back to black.
@@ -91,9 +88,9 @@ void leds_load_colors() {
             leds_colors_next[i].blue = 0;
         } else {
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
-            leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red * 5;
-            leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green * 5;
-            leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue * 5;
+            leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red << 8;
+            leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green << 8;
+            leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue << 8;
         }
 
         leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
@@ -130,9 +127,9 @@ void leds_set_gs(const rgbcolor16_t* colors) {
 
     for (uint8_t stoplight_index = 0; stoplight_index < LED_COUNT; stoplight_index++)
     {
-        r = colors[stoplight_index].red << current_ambient_correct;
-        g = colors[stoplight_index].green << current_ambient_correct;
-        b = colors[stoplight_index].blue << current_ambient_correct;
+        r = colors[stoplight_index].red;
+        g = colors[stoplight_index].green;
+        b = colors[stoplight_index].blue;
 
         if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
             if (leds_twinkle_bits & (1 << stoplight_index)) {
@@ -217,7 +214,6 @@ void leds_next_anim_frame() {
             leds_anim_looping--;
         } else { // not ambient, no loops remaining
             leds_is_ambient = 1; // Now we're back to being ambient...
-            current_ambient_correct = 1;
             leds_start_anim_by_id(leds_saved_anim_id, 0, 1);
             return; // skip the transitions_and_go because that's called in start_anim.
         }
@@ -228,12 +224,6 @@ void leds_next_anim_frame() {
 
 /// Do a time step of the LED animation system.
 void leds_timestep() {
-    // If the ambient light correction has changed, mark everything dirty.
-    if (current_ambient_correct != previous_ambient_correct) {
-        previous_ambient_correct = current_ambient_correct;
-        leds_dirty = 1;
-    }
-
     //  Apply our current delta animation timestep.
     if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
         uint16_t target_index;
