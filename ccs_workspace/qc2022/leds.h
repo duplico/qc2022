@@ -17,6 +17,13 @@
 #define LEDS_TWINKLE_STEPS_SLOW 125
 #define LEDS_TWINKLE_STEPS_HARD 14
 
+#define LEDS_QUEUE_MAXLEN 5
+#define LEDS_ID_NO_ANIM 255
+
+#define LEDS_ENQUEUE 0
+#define LEDS_CLEARQUEUE 1
+#define LEDS_DEQUEUE 2
+
 typedef struct {
     uint16_t red;
     uint16_t green;
@@ -47,7 +54,7 @@ typedef struct {
 extern uint8_t leds_is_ambient;
 
 void leds_timestep();
-void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient);
+void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8_t clearqueue);
 void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, uint8_t ambient);
 
 #endif /* LEDS_H_ */

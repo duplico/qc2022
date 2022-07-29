@@ -52,6 +52,9 @@ rgbdelta_t leds_colors_step[LED_COUNT] = {
         {0, 0, 0},
 };
 
+uint8_t leds_anim_queue_ids[LEDS_QUEUE_MAXLEN]; // Initialized in code.
+uint8_t leds_anim_queue_loops[LEDS_QUEUE_MAXLEN]; // Initialized in code.
+
 /// Does the display need re-sent to the LED driver?
 uint8_t leds_dirty = 1;
 
@@ -188,7 +191,10 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_dirty = 1;
 }
 
-void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
+/**
+ ** NB: Must call with clearqueue=1 the first time.
+ */
+void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8_t clearqueue) {
     if (ambient && !leds_is_ambient) {
         // If we've been asked to switch our ambient animation, but we're currently in an
         //  interrupting animation, we need to change what we have saved so we go back to
@@ -197,9 +203,27 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
         return;
     }
 
-    leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
+    if (clearqueue) {
+        for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
+            leds_anim_queue_ids[i] = LEDS_ID_NO_ANIM;
+        }
+    }
 
-    leds_anim_id = anim_id;
+    // If there's nothing in the queue, and the current animation is ambient, we can
+    //  start this animation directly.
+    if (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM) {
+        leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
+        leds_anim_id = anim_id;
+    } else {
+        // Otherwise, enqueue it.
+        for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
+            if (leds_anim_queue_ids[i] == LEDS_ID_NO_ANIM) {
+                leds_anim_queue_ids[i] = anim_id;
+                leds_anim_queue_loops[i] = anim_id;
+                break;
+            }
+        }
+    }
 }
 
 /// Load and display the next animation frame in the current animation.
@@ -213,8 +237,22 @@ void leds_next_anim_frame() {
             leds_anim_frame = 0;
             leds_anim_looping--;
         } else { // not ambient, no loops remaining
-            leds_is_ambient = 1; // Now we're back to being ambient...
-            leds_start_anim_by_id(leds_ambient_anim_id, 0, 1);
+            // Is there anything in the queue?
+            if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
+                // If so, dequeue it.
+                leds_start_anim_by_struct(all_anims[leds_anim_queue_ids[0]], leds_anim_queue_loops[0], 0);
+
+                // Move everything else up.
+                for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN-1; i++) {
+                    leds_anim_queue_ids[i] = leds_anim_queue_ids[i+1];
+                    leds_anim_queue_loops[i] = leds_anim_queue_loops[i+1];
+                }
+                leds_anim_queue_ids[LEDS_QUEUE_MAXLEN-1] = LEDS_ID_NO_ANIM;
+            } else {
+            // If not, go back to ambient:
+                leds_is_ambient = 1; // Now we're back to being ambient...
+                leds_start_anim_by_id(leds_ambient_anim_id, 0, 1, 0);
+            }
             return; // skip the transitions_and_go because that's called in start_anim.
         }
     }
