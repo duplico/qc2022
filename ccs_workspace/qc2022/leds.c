@@ -105,11 +105,6 @@ void leds_load_colors() {
             leds_colors_next[i].blue = all_anims[leds_ambient_anim_id]->colors[0][i].blue << 8;
         }
 
-        // This is what we used to do: fading to black
-        // leds_colors_next[i].red = 0;
-        // leds_colors_next[i].green = 0;
-        // leds_colors_next[i].blue = 0;
-
         leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
         leds_colors_step[i].green = ((int_fast32_t) leds_colors_next[i].green - leds_colors_curr[i].green) / leds_transition_steps;
         leds_colors_step[i].blue = ((int_fast32_t) leds_colors_next[i].blue - leds_colors_curr[i].blue) / leds_transition_steps;
