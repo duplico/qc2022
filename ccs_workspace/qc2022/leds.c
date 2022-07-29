@@ -83,18 +83,32 @@ void leds_load_colors() {
         leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green << 8;
         leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue << 8;
 
-        // Stage in the next color:
-        // If we're looping, it's modded. If not looping, back to black.
-        if (leds_anim_frame == leds_current_anim->len-1 && !(leds_anim_looping || leds_is_ambient)) {
-            leds_colors_next[i].red = 0;
-            leds_colors_next[i].green = 0;
-            leds_colors_next[i].blue = 0;
-        } else {
+        // Stage in the next color. There's a few options here to pick the next frame to
+        //  fade to.
+        if (leds_anim_frame < leds_current_anim->len-1 || leds_anim_looping || leds_is_ambient) {
+            // The base case is that this is not the end of the animation; or, that we're
+            //  ambient or otherwise still looping
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
             leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red << 8;
             leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green << 8;
             leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue << 8;
+        } else if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
+            // Or, we could be about to transition to the next non-ambient animation
+            //  in the queue.
+            leds_colors_next[i].red = all_anims[leds_anim_queue_ids[0]]->colors[0][i].red << 8;
+            leds_colors_next[i].green = all_anims[leds_anim_queue_ids[0]]->colors[0][i].green << 8;
+            leds_colors_next[i].blue = all_anims[leds_anim_queue_ids[0]]->colors[0][i].blue << 8;
+        } else {
+            // Or, we're going back to ambient after this.
+            leds_colors_next[i].red = all_anims[leds_ambient_anim_id]->colors[0][i].red << 8;
+            leds_colors_next[i].green = all_anims[leds_ambient_anim_id]->colors[0][i].green << 8;
+            leds_colors_next[i].blue = all_anims[leds_ambient_anim_id]->colors[0][i].blue << 8;
         }
+
+        // This is what we used to do: fading to black
+        // leds_colors_next[i].red = 0;
+        // leds_colors_next[i].green = 0;
+        // leds_colors_next[i].blue = 0;
 
         leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
         leds_colors_step[i].green = ((int_fast32_t) leds_colors_next[i].green - leds_colors_curr[i].green) / leds_transition_steps;
@@ -191,6 +205,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_dirty = 1;
 }
 
+/// Launch a new animation, using its ID, possibly as the new ambient one.
 /**
  ** NB: Must call with clearqueue=1 the first time.
  */
@@ -219,7 +234,7 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8
         for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
             if (leds_anim_queue_ids[i] == LEDS_ID_NO_ANIM) {
                 leds_anim_queue_ids[i] = anim_id;
-                leds_anim_queue_loops[i] = anim_id;
+                leds_anim_queue_loops[i] = loop;
                 break;
             }
         }
