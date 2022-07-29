@@ -53,7 +53,7 @@ void next_animation() {
     fram_unlock();
     badge_conf.current_anim_id = candidate;
     fram_lock();
-    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1);
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 1);
 }
 
 /// Mark a badge as seen, returning 1 if it's a new badge or 2 if a new uber.
@@ -80,9 +80,9 @@ void badge_set_seen(uint8_t id) {
 
     if (seen) {
         if (is_uber(id)) {
-            leds_start_anim_by_id(ANIM_META_PAIRUBER, 0, 0);
+            leds_start_anim_by_id(ANIM_META_PAIRUBER, 0, 0, 1);
         } else {
-            leds_start_anim_by_id(ANIM_META_PAIR, 10, 0);
+            leds_start_anim_by_id(ANIM_META_PAIR, 10, 0, 1);
         }
 
         return;
@@ -103,11 +103,10 @@ void badge_set_seen(uint8_t id) {
 
     fram_lock();
 
-    // TODO:
     if (is_uber(id)) {
-        leds_start_anim_by_id(ANIM_META_NEWUBER, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWUBER, 0, 0, 1);
     } else {
-        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0);
+        leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0, 1);
     }
 }
 
@@ -121,14 +120,14 @@ void badge_set_id(uint8_t id) {
     set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
     fram_lock();
 
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 0, 0);
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 0, 0, 1);
 }
 
 /// Set the current time.
 inline void badge_set_time(uint32_t clock, uint8_t authority) {
     if (authority != badge_conf.clock_authority) {
         // If our authority is changing, acknowledge it.
-        leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0);
+        leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0, 1);
     }
     fram_unlock();
     badge_conf.clock_authority = authority;
@@ -149,7 +148,7 @@ void badge_button_press_long() {
     tlc_stage_dc_mult(brightness_level+1);
     tlc_set_fun();
 
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0);
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0, 1);
 }
 
 void badge_button_press_short() {
@@ -166,7 +165,7 @@ void badge_init() {
         // This is our first time turning on.
     }
 
-    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0);
-    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 0, 1);
-    //    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1); // TODO
+    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
+    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 0); // TODO
 }

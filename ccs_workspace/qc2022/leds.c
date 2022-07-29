@@ -52,6 +52,9 @@ rgbdelta_t leds_colors_step[LED_COUNT] = {
         {0, 0, 0},
 };
 
+uint8_t leds_anim_queue_ids[LEDS_QUEUE_MAXLEN]; // Initialized in code.
+uint8_t leds_anim_queue_loops[LEDS_QUEUE_MAXLEN]; // Initialized in code.
+
 /// Does the display need re-sent to the LED driver?
 uint8_t leds_dirty = 1;
 
@@ -59,7 +62,7 @@ uint8_t led_animation_state = 0;
 
 uint8_t leds_anim_frame;
 uint8_t leds_anim_id;
-uint8_t leds_saved_anim_id;
+uint8_t leds_ambient_anim_id;
 uint8_t leds_is_ambient = 1;
 uint8_t leds_anim_looping;
 uint8_t leds_anim_length;
@@ -80,17 +83,26 @@ void leds_load_colors() {
         leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green << 8;
         leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue << 8;
 
-        // Stage in the next color:
-        // If we're looping, it's modded. If not looping, back to black.
-        if (leds_anim_frame == leds_current_anim->len-1 && !(leds_anim_looping || leds_is_ambient)) {
-            leds_colors_next[i].red = 0;
-            leds_colors_next[i].green = 0;
-            leds_colors_next[i].blue = 0;
-        } else {
+        // Stage in the next color. There's a few options here to pick the next frame to
+        //  fade to.
+        if (leds_anim_frame < leds_current_anim->len-1 || leds_anim_looping || leds_is_ambient) {
+            // The base case is that this is not the end of the animation; or, that we're
+            //  ambient or otherwise still looping
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
             leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red << 8;
             leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green << 8;
             leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue << 8;
+        } else if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
+            // Or, we could be about to transition to the next non-ambient animation
+            //  in the queue.
+            leds_colors_next[i].red = all_anims[leds_anim_queue_ids[0]]->colors[0][i].red << 8;
+            leds_colors_next[i].green = all_anims[leds_anim_queue_ids[0]]->colors[0][i].green << 8;
+            leds_colors_next[i].blue = all_anims[leds_anim_queue_ids[0]]->colors[0][i].blue << 8;
+        } else {
+            // Or, we're going back to ambient after this.
+            leds_colors_next[i].red = all_anims[leds_ambient_anim_id]->colors[0][i].red << 8;
+            leds_colors_next[i].green = all_anims[leds_ambient_anim_id]->colors[0][i].green << 8;
+            leds_colors_next[i].blue = all_anims[leds_ambient_anim_id]->colors[0][i].blue << 8;
         }
 
         leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
@@ -168,7 +180,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     // If we've been asked to do an interrupting animation, remember what our ambient anim
     //  was so we can go back to it.
     if (!ambient && leds_is_ambient) {
-        leds_saved_anim_id = leds_anim_id;
+        leds_ambient_anim_id = leds_anim_id;
     }
 
     leds_is_ambient = ambient;
@@ -188,18 +200,40 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_dirty = 1;
 }
 
-void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient) {
+/// Launch a new animation, using its ID, possibly as the new ambient one.
+/**
+ ** NB: Must call with clearqueue=1 the first time.
+ */
+void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8_t clearqueue) {
     if (ambient && !leds_is_ambient) {
         // If we've been asked to switch our ambient animation, but we're currently in an
         //  interrupting animation, we need to change what we have saved so we go back to
         //  the new ambient animation.
-        leds_saved_anim_id = anim_id;
+        leds_ambient_anim_id = anim_id;
         return;
     }
 
-    leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
+    if (clearqueue) {
+        for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
+            leds_anim_queue_ids[i] = LEDS_ID_NO_ANIM;
+        }
+    }
 
-    leds_anim_id = anim_id;
+    // If there's nothing in the queue, and the current animation is ambient, we can
+    //  start this animation directly.
+    if (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM) {
+        leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
+        leds_anim_id = anim_id;
+    } else {
+        // Otherwise, enqueue it.
+        for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
+            if (leds_anim_queue_ids[i] == LEDS_ID_NO_ANIM) {
+                leds_anim_queue_ids[i] = anim_id;
+                leds_anim_queue_loops[i] = loop;
+                break;
+            }
+        }
+    }
 }
 
 /// Load and display the next animation frame in the current animation.
@@ -213,8 +247,22 @@ void leds_next_anim_frame() {
             leds_anim_frame = 0;
             leds_anim_looping--;
         } else { // not ambient, no loops remaining
-            leds_is_ambient = 1; // Now we're back to being ambient...
-            leds_start_anim_by_id(leds_saved_anim_id, 0, 1);
+            // Is there anything in the queue?
+            if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
+                // If so, dequeue it.
+                leds_start_anim_by_struct(all_anims[leds_anim_queue_ids[0]], leds_anim_queue_loops[0], 0);
+
+                // Move everything else up.
+                for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN-1; i++) {
+                    leds_anim_queue_ids[i] = leds_anim_queue_ids[i+1];
+                    leds_anim_queue_loops[i] = leds_anim_queue_loops[i+1];
+                }
+                leds_anim_queue_ids[LEDS_QUEUE_MAXLEN-1] = LEDS_ID_NO_ANIM;
+            } else {
+            // If not, go back to ambient:
+                leds_is_ambient = 1; // Now we're back to being ambient...
+                leds_start_anim_by_id(leds_ambient_anim_id, 0, 1, 0);
+            }
             return; // skip the transitions_and_go because that's called in start_anim.
         }
     }
