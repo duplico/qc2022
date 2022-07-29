@@ -20,10 +20,6 @@
 #define LEDS_QUEUE_MAXLEN 5
 #define LEDS_ID_NO_ANIM 255
 
-#define LEDS_ENQUEUE 0
-#define LEDS_CLEARQUEUE 1
-#define LEDS_DEQUEUE 2
-
 typedef struct {
     uint16_t red;
     uint16_t green;
