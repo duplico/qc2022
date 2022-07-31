@@ -87,7 +87,7 @@ void leds_load_colors() {
 
         // Stage in the next color. There's a few options here to pick the next frame to
         //  fade to.
-        if (leds_anim_id == ANIM_META_CONNECTS && leds_anim_frame == leds_anim_length-1) {
+        if (leds_current_anim == all_anims[ANIM_META_CONNECTS] && leds_anim_frame == leds_anim_length-1) {
             // The very special case where we are showing our connection count
             //  animation and have reached the point where we need to modify the
             //  animation to freeze it.
@@ -245,8 +245,8 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8
     // If there's nothing in the queue, and the current animation is ambient, we can
     //  start this animation directly.
     if (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM) {
-        leds_anim_id = anim_id;
         leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
+        leds_anim_id = anim_id;
     } else {
         // Otherwise, enqueue it.
         for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
