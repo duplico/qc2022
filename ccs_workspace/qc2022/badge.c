@@ -94,11 +94,9 @@ void badge_set_seen(uint8_t id) {
     set_id_buf(id, 2, badge_conf.badges_seen);
 
     badge_conf.badges_seen_count++;
-    // TODO: badge count unlocks.
 
     if (is_uber(id)) {
         badge_conf.ubers_seen_count++;
-        // TODO: uber count unlocks.
     }
 
     fram_lock();
