@@ -23,6 +23,9 @@ color_corrections = {
     "bright1" : (15, 0, 0),
     "bright2" : (15, 64, 0),
     "bright3" : (15, 64, 255),
+    "redblue" : (255, 0, 255),
+    "redgreen" : (255, 255, 0),
+    "bluegreen" : (0,255,255),
 }
 
 LED_COUNT = 5
