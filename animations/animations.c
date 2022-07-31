@@ -58,12 +58,11 @@ const rgbcolor_t meta_connects_frames[][5] = {
     {{0xf, 0x0, 0x0}, {0xf, 0x0, 0x0}, {0xf, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
     {{0xf, 0x0, 0x0}, {0xf, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
     {{0xf, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
-    {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
 };
-const uint16_t meta_connects_durations[] = {0, 800, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
-const uint16_t meta_connects_fade_durs[] = {800, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120};
+const uint16_t meta_connects_durations[] = {0, 800, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 2500};
+const uint16_t meta_connects_fade_durs[] = {800, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 2000};
 // the animation:
-const leds_animation_t meta_connects = {meta_connects_frames, meta_connects_durations, meta_connects_fade_durs, 17, ANIM_TYPE_SOLID};
+const leds_animation_t meta_connects = {meta_connects_frames, meta_connects_durations, meta_connects_fade_durs, 16, ANIM_TYPE_SOLID};
 
 ///////////////// META_NEWPAIR:
 const rgbcolor_t meta_newpair_frames[][5] = {

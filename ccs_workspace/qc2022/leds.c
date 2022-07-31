@@ -13,6 +13,7 @@
 
 #include "tlc5948a.h"
 
+#include "badge.h"
 #include "leds.h"
 #include "animations.h"
 
@@ -66,6 +67,7 @@ uint8_t leds_ambient_anim_id;
 uint8_t leds_is_ambient = 1;
 uint8_t leds_anim_looping;
 uint8_t leds_anim_length;
+uint8_t leds_force_twinkle;
 uint16_t leds_hold_steps;
 uint16_t leds_hold_index;
 uint16_t leds_transition_steps;
@@ -85,7 +87,24 @@ void leds_load_colors() {
 
         // Stage in the next color. There's a few options here to pick the next frame to
         //  fade to.
-        if (leds_anim_frame < leds_current_anim->len-1 || leds_anim_looping || leds_is_ambient) {
+        if (leds_anim_id == ANIM_META_CONNECTS && leds_anim_frame == leds_anim_length-1) {
+            // The very special case where we are showing our connection count
+            //  animation and have reached the point where we need to modify the
+            //  animation to freeze it.
+
+            // Override the hold time and fade time to match the last visible frame
+            //  in the animation.
+            leds_hold_steps = leds_current_anim->durations[leds_current_anim->len-1] / TICKS_PER_LED_ANIM_DUR;
+            leds_transition_steps =  leds_current_anim->fade_durs[leds_current_anim->len-1] / TICKS_PER_LED_ANIM_DUR;
+
+            // Also, twinkle it.
+            leds_force_twinkle = 1;
+
+            // We fade to black after this one.
+            leds_colors_next[i].red = 0;
+            leds_colors_next[i].green = 0;
+            leds_colors_next[i].blue = 0;
+        } else if (leds_anim_frame < leds_current_anim->len-1 || leds_anim_looping || leds_is_ambient) {
             // The base case is that this is not the end of the animation; or, that we're
             //  ambient or otherwise still looping
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
@@ -143,7 +162,7 @@ void leds_set_gs(const rgbcolor16_t* colors) {
         g = colors[stoplight_index].green;
         b = colors[stoplight_index].blue;
 
-        if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
+        if (leds_force_twinkle || leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
             if (leds_twinkle_bits & (1 << stoplight_index)) {
                 r = r >> 2;
                 g = g >> 2;
@@ -184,7 +203,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     }
 
     leds_is_ambient = ambient;
-
+    leds_force_twinkle = 0;
     leds_current_anim = animation;
 
     leds_anim_frame = 0; // This is our frame index in the animation.
@@ -193,7 +212,11 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_anim_adjustment_index = 0;
 
     leds_anim_looping = loop;
-    leds_anim_length = leds_current_anim->len;
+    if (animation == all_anims[ANIM_META_CONNECTS]) {
+        leds_anim_length = leds_current_anim->len - badge_count_lights() + 1;
+    } else {
+        leds_anim_length = leds_current_anim->len;
+    }
 
     leds_set_steps_and_go();
     leds_set_gs(leds_colors_curr);
@@ -222,8 +245,8 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8
     // If there's nothing in the queue, and the current animation is ambient, we can
     //  start this animation directly.
     if (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM) {
-        leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
         leds_anim_id = anim_id;
+        leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
     } else {
         // Otherwise, enqueue it.
         for (uint8_t i=0; i<LEDS_QUEUE_MAXLEN; i++) {
@@ -250,6 +273,7 @@ void leds_next_anim_frame() {
             // Is there anything in the queue?
             if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
                 // If so, dequeue it.
+                leds_anim_id = leds_anim_queue_ids[0];
                 leds_start_anim_by_struct(all_anims[leds_anim_queue_ids[0]], leds_anim_queue_loops[0], 0);
 
                 // Move everything else up.
@@ -273,9 +297,9 @@ void leds_next_anim_frame() {
 /// Do a time step of the LED animation system.
 void leds_timestep() {
     //  Apply our current delta animation timestep.
-    if (leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
+    if (leds_force_twinkle || leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
         uint16_t target_index;
-        if (leds_current_anim->anim_type == ANIM_TYPE_FASTTWINKLE)
+        if (leds_force_twinkle || leds_current_anim->anim_type == ANIM_TYPE_FASTTWINKLE)
             target_index = LEDS_TWINKLE_STEPS_FAST/TICKS_PER_LED_ANIM_DUR;
         else
             target_index = LEDS_TWINKLE_STEPS_SLOW/TICKS_PER_LED_ANIM_DUR;
