@@ -62,8 +62,8 @@ uint8_t anim_unlocked(uint8_t id) {
     case ANIM_S00:
     case ANIM_S01:
     case ANIM_S02:
-//    case ANIM_S03: // TODO
-        return 1;
+    case ANIM_S03:
+        return is_uber(badge_conf.badge_id);
     }
 
     // Otherwise, it's not something we can unlock.

@@ -424,6 +424,15 @@ const uint16_t s02_fade_durs[] = {200};
 // the animation:
 const leds_animation_t s02 = {s02_frames, s02_durations, s02_fade_durs, 1, ANIM_TYPE_SLOWTWINKLE};
 
+///////////////// S03:
+const rgbcolor_t s03_frames[][5] = {
+    {{0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}},
+};
+const uint16_t s03_durations[] = {400};
+const uint16_t s03_fade_durs[] = {200};
+// the animation:
+const leds_animation_t s03 = {s03_frames, s03_durations, s03_fade_durs, 1, ANIM_TYPE_SLOWTWINKLE};
+
 ///////////////// U00:
 const rgbcolor_t u00_frames[][5] = {
     {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0xff, 0x0, 0x0}},
@@ -463,4 +472,4 @@ const uint16_t u02_fade_durs[] = {200, 200, 200, 200, 200};
 // the animation:
 const leds_animation_t u02 = {u02_frames, u02_durations, u02_fade_durs, 5, ANIM_TYPE_SOLID};
 
-const leds_animation_t *all_anims[33] = {&b00, &b01, &b02, &b03, &b04, &b05, &b06, &h00, &h01, &h02, &h03, &h04, &h05, &h06, &h07, &h08, &h09, &s00, &s01, &s02, &u00, &u01, &u02, &meta_connects, &meta_newpair, &meta_newuber, &meta_pair, &meta_pairuber, &meta_startup_fade, &meta_startup_spin, &meta_z_brightness0, &meta_z_brightness1, &meta_z_brightness2};
+const leds_animation_t *all_anims[34] = {&b00, &b01, &b02, &b03, &b04, &b05, &b06, &h00, &h01, &h02, &h03, &h04, &h05, &h06, &h07, &h08, &h09, &s00, &s01, &s02, &s03, &u00, &u01, &u02, &meta_connects, &meta_newpair, &meta_newuber, &meta_pair, &meta_pairuber, &meta_startup_fade, &meta_startup_spin, &meta_z_brightness0, &meta_z_brightness1, &meta_z_brightness2};
