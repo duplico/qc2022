@@ -27,6 +27,35 @@ badge_conf_t badge_conf = (badge_conf_t){
 
 uint8_t anim_unlocked(uint8_t id) {
     return 1;
+
+    // Check unlockable animations:
+    switch(id) {
+    // Standard ambient animations:
+    case ANIM_H00:
+    case ANIM_H01:
+    case ANIM_H02:
+    case ANIM_H03:
+    case ANIM_H04:
+    case ANIM_H05:
+    case ANIM_H06:
+    case ANIM_H07:
+    case ANIM_H08:
+    case ANIM_H09:
+        return 1;
+    // Uber ambient animations:
+    case ANIM_U00:
+    case ANIM_U01:
+    case ANIM_U02:
+        return 1;
+    // Special ambient animations:
+    case ANIM_S00:
+    case ANIM_S01:
+    case ANIM_S02:
+        return 1;
+    }
+
+    // Otherwise, it's not something we can unlock.
+    return 0;
 }
 
 /// Prepare to write to FRAM by disabling interrupts and unlocking write access to INFOA.
