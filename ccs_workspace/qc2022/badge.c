@@ -157,6 +157,13 @@ void badge_button_press_short() {
     }
 }
 
+uint8_t badge_count_lights() {
+    if (badge_conf.badges_seen_count >= BADGES_SEEN_MAX_DISP) {
+        return 15;
+    }
+    return 1 + badge_conf.badges_seen_count/BADGES_SEEN_PER_DISP;
+}
+
 /// Initialize the badge.
 void badge_init() {
     if (badge_conf.initialized) {
@@ -166,6 +173,7 @@ void badge_init() {
     }
 
     leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
-    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);
+//    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);
+    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 0); // TODO
 }

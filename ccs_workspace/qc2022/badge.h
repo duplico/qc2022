@@ -15,6 +15,9 @@
 #define CONTROLLER_ID 251
 #define BADGES_SEEN_BUFFER_LEN_BYTES 32
 
+#define BADGES_SEEN_MAX_DISP 150
+#define BADGES_SEEN_PER_DISP 10
+
 #define BADGE_PAIR_COOLDOWN 8
 #define BADGE_CLOCK_DRIFT_ALLOWED_SECONDS 300 // 5 minutes
 
@@ -67,6 +70,7 @@ inline void badge_set_time(uint32_t clock, uint8_t authority);
 void badge_set_seen(uint8_t id);
 void badge_button_press_long();
 void badge_button_press_short();
+uint8_t badge_count_lights();
 void badge_init();
 
 #endif /* BADGE_H_ */
