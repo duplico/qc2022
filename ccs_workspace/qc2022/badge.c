@@ -32,25 +32,37 @@ uint8_t anim_unlocked(uint8_t id) {
     switch(id) {
     // Standard ambient animations:
     case ANIM_H00:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H00;
     case ANIM_H01:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H01;
     case ANIM_H02:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H02;
     case ANIM_H03:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H03;
     case ANIM_H04:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H04;
     case ANIM_H05:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H05;
     case ANIM_H06:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H06;
     case ANIM_H07:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H07;
     case ANIM_H08:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H08;
     case ANIM_H09:
-        return 1;
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H09;
     // Uber ambient animations:
     case ANIM_U00:
+        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U00;
     case ANIM_U01:
+        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U01;
     case ANIM_U02:
-        return 1;
+        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U02;
     // Special ambient animations:
     case ANIM_S00:
     case ANIM_S01:
     case ANIM_S02:
+//    case ANIM_S03: // TODO
         return 1;
     }
 
