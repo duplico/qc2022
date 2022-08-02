@@ -27,6 +27,55 @@ badge_conf_t badge_conf = (badge_conf_t){
 
 uint8_t anim_unlocked(uint8_t id) {
     return 1;
+
+    // Check unlockable animations:
+    switch(id) {
+    // Standard ambient animations:
+    case ANIM_H00:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H00;
+    case ANIM_H01:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H01;
+    case ANIM_H02:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H02;
+    case ANIM_H03:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H03;
+    case ANIM_H04:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H04;
+    case ANIM_H05:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H05;
+    case ANIM_H06:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H06;
+    case ANIM_H07:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H07;
+    case ANIM_H08:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H08;
+    case ANIM_H09:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H09;
+    case ANIM_H10:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H10;
+    case ANIM_H11:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H11;
+    case ANIM_H12:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H12;
+    // Uber ambient animations:
+    case ANIM_U00:
+        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U00;
+    case ANIM_U01:
+        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U01;
+    // Special ambient animations:
+    case ANIM_S00:
+        // Hot
+        return 1;
+    case ANIM_S01:
+        // Cold
+        return 1;
+    case ANIM_S02:
+        // Party
+        return 1;
+    }
+
+    // Otherwise, it's not something we can unlock.
+    return 0;
 }
 
 /// Prepare to write to FRAM by disabling interrupts and unlocking write access to INFOA.
@@ -94,11 +143,9 @@ void badge_set_seen(uint8_t id) {
     set_id_buf(id, 2, badge_conf.badges_seen);
 
     badge_conf.badges_seen_count++;
-    // TODO: badge count unlocks.
 
     if (is_uber(id)) {
         badge_conf.ubers_seen_count++;
-        // TODO: uber count unlocks.
     }
 
     fram_lock();
@@ -172,8 +219,8 @@ void badge_init() {
         // This is our first time turning on.
     }
 
-    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
+//    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
 //    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);
-    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
-    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 0); // TODO
+//    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 1); // TODO
 }
