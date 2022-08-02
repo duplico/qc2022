@@ -6,6 +6,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <msp430fr2633.h>
 
@@ -204,6 +205,18 @@ void badge_button_press_short() {
     }
 }
 
+void badge_bling() {
+    // Don't do it if we're not ambient.
+    if (!leds_is_ambient) {
+        return;
+    }
+
+    // Choose which bling
+    // Animate the bling
+    // TODO: Handle if number of blings changes
+    leds_start_anim_by_id(ANIM_B00 + rand() % (1 + ANIM_B06 - ANIM_B00), 3, 0, 0);
+}
+
 uint8_t badge_count_lights() {
     if (badge_conf.badges_seen_count >= BADGES_SEEN_MAX_DISP) {
         return 15;
@@ -218,6 +231,8 @@ void badge_init() {
     } else {
         // This is our first time turning on.
     }
+
+    srand(badge_conf.badge_id);
 
 //    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
 //    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);

@@ -33,6 +33,7 @@ uint8_t button_state;
 // Interrupt flags
 volatile uint8_t f_time_loop;
 volatile uint8_t f_long_press;
+volatile uint8_t f_bling;
 
 /// Initialize clock signals and the three system clocks.
 /**
@@ -231,6 +232,11 @@ int main(void) {
             f_long_press = 0;
             button_state = 2;
             badge_button_press_long();
+        }
+
+        if (f_bling) {
+            badge_bling();
+            f_bling = 0;
         }
 
         // Check whether CapTIvate needs to be serviced.
