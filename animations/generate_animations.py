@@ -26,6 +26,9 @@ color_corrections = {
     "redblue" : (255, 0, 255),
     "redgreen" : (255, 255, 0),
     "bluegreen" : (0,255,255),
+    "whitered" : (255,15,15),
+    "whitegreen" : (15,255,15),
+    "whiteblue" : (15,15,255)
 }
 
 LED_COUNT = 5
@@ -103,6 +106,8 @@ def main():
                 while lines[line_no][0] in string.digits:
                     # Consume the animation. Ignore white space
                     frame_lines_str += lines[line_no]
+                    if lines[line_no][-1] != ',':
+                        frame_lines_str += ','
                     line_no += 1
             except IndexError:
                 pass

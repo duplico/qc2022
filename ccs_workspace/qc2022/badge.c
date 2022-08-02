@@ -51,13 +51,17 @@ uint8_t anim_unlocked(uint8_t id) {
         return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H08;
     case ANIM_H09:
         return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H09;
+    case ANIM_H10:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H10;
+    case ANIM_H11:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H11;
+    case ANIM_H12:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H12;
     // Uber ambient animations:
     case ANIM_U00:
         return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U00;
     case ANIM_U01:
         return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U01;
-    case ANIM_U02:
-        return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U02;
     // Special ambient animations:
     case ANIM_S00:
         // Hot
