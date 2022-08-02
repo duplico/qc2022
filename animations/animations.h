@@ -83,6 +83,14 @@ extern const rgbcolor_t h12_frames[][5];
 extern const uint16_t h12_durations[];
 extern const uint16_t h12_fade_durs[];
 extern const leds_animation_t h12;
+extern const rgbcolor_t h13_frames[][5];
+extern const uint16_t h13_durations[];
+extern const uint16_t h13_fade_durs[];
+extern const leds_animation_t h13;
+extern const rgbcolor_t h14_frames[][5];
+extern const uint16_t h14_durations[];
+extern const uint16_t h14_fade_durs[];
+extern const leds_animation_t h14;
 extern const rgbcolor_t meta_connects_frames[][5];
 extern const uint16_t meta_connects_durations[];
 extern const uint16_t meta_connects_fade_durs[];
@@ -143,8 +151,8 @@ extern const rgbcolor_t u01_frames[][5];
 extern const uint16_t u01_durations[];
 extern const uint16_t u01_fade_durs[];
 extern const leds_animation_t u01;
-#define ANIM_COUNT 25
-#define ANIM_COUNT_INCL_META 35
+#define ANIM_COUNT 27
+#define ANIM_COUNT_INCL_META 37
 #define ANIM_B00 0
 #define ANIM_B01 1
 #define ANIM_B02 2
@@ -165,23 +173,25 @@ extern const leds_animation_t u01;
 #define ANIM_H10 17
 #define ANIM_H11 18
 #define ANIM_H12 19
-#define ANIM_S00 20
-#define ANIM_S01 21
-#define ANIM_S02 22
-#define ANIM_U00 23
-#define ANIM_U01 24
-#define ANIM_META_CONNECTS 25
-#define ANIM_META_NEWPAIR 26
-#define ANIM_META_NEWUBER 27
-#define ANIM_META_PAIR 28
-#define ANIM_META_PAIRUBER 29
-#define ANIM_META_STARTUP_FADE 30
-#define ANIM_META_STARTUP_SPIN 31
-#define ANIM_META_Z_BRIGHTNESS0 32
-#define ANIM_META_Z_BRIGHTNESS1 33
-#define ANIM_META_Z_BRIGHTNESS2 34
+#define ANIM_H13 20
+#define ANIM_H14 21
+#define ANIM_S00 22
+#define ANIM_S01 23
+#define ANIM_S02 24
+#define ANIM_U00 25
+#define ANIM_U01 26
+#define ANIM_META_CONNECTS 27
+#define ANIM_META_NEWPAIR 28
+#define ANIM_META_NEWUBER 29
+#define ANIM_META_PAIR 30
+#define ANIM_META_PAIRUBER 31
+#define ANIM_META_STARTUP_FADE 32
+#define ANIM_META_STARTUP_SPIN 33
+#define ANIM_META_Z_BRIGHTNESS0 34
+#define ANIM_META_Z_BRIGHTNESS1 35
+#define ANIM_META_Z_BRIGHTNESS2 36
 #define ANIM_TYPE_SOLID 0
 #define ANIM_TYPE_FASTTWINKLE 1
 #define ANIM_TYPE_SLOWTWINKLE 2
-extern const leds_animation_t *all_anims[35];
+extern const leds_animation_t *all_anims[37];
 #endif // _H_

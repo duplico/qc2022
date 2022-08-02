@@ -1,10 +1,10 @@
-# green star chase
+# rainbow star chase
 
 0 off
 1 red
-2 white
+2 green
 3 blue
-4 green
+4 white
 
 solid
 0,0,0,4,0,400,200
