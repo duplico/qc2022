@@ -38,6 +38,9 @@
 #define BADGE_UNLOCK_COUNT_U00 1
 #define BADGE_UNLOCK_COUNT_U01 5
 
+// NB: This is modded, so a power of 2 is preferred.
+#define BADGE_BLING_SECS 64
+
 // SMCLK rate in Hz:
 #define SMCLK_RATE_HZ 8000000
 
@@ -73,6 +76,7 @@ typedef struct {
 extern badge_conf_t badge_conf;
 extern volatile uint8_t f_time_loop;
 extern volatile uint8_t f_long_press;
+extern volatile uint8_t f_bling;
 
 // Utility functions:
 uint8_t check_id_buf(uint8_t id, uint8_t *buf);
@@ -87,6 +91,7 @@ inline void badge_set_time(uint32_t clock, uint8_t authority);
 void badge_set_seen(uint8_t id);
 void badge_button_press_long();
 void badge_button_press_short();
+void badge_bling();
 uint8_t badge_count_lights();
 void badge_init();
 

@@ -56,6 +56,10 @@ __interrupt void RTC_ISR(void) {
                 // Every 64 seconds, write our time to the config.
                 badge_set_time(rtc_seconds, badge_conf.clock_authority);
             }
+
+            if (!(rtc_seconds % BADGE_BLING_SECS)) {
+                f_bling = 1;
+            }
         }
 
         LPM0_EXIT;
