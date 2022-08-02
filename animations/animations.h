@@ -176,7 +176,7 @@ extern const leds_animation_t u02;
 #define ANIM_META_Z_BRIGHTNESS1 32
 #define ANIM_META_Z_BRIGHTNESS2 33
 #define ANIM_TYPE_SOLID 0
-#define ANIM_TYPE_FASTTWINKLE 1
-#define ANIM_TYPE_SLOWTWINKLE 2
+#define ANIM_TYPE_SLOWTWINKLE 1
+#define ANIM_TYPE_FASTTWINKLE 2
 extern const leds_animation_t *all_anims[34];
 #endif // _H_
