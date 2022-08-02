@@ -71,6 +71,10 @@ extern const rgbcolor_t h09_frames[][5];
 extern const uint16_t h09_durations[];
 extern const uint16_t h09_fade_durs[];
 extern const leds_animation_t h09;
+extern const rgbcolor_t h10_frames[][5];
+extern const uint16_t h10_durations[];
+extern const uint16_t h10_fade_durs[];
+extern const leds_animation_t h10;
 extern const rgbcolor_t meta_connects_frames[][5];
 extern const uint16_t meta_connects_durations[];
 extern const uint16_t meta_connects_fade_durs[];
@@ -123,10 +127,6 @@ extern const rgbcolor_t s02_frames[][5];
 extern const uint16_t s02_durations[];
 extern const uint16_t s02_fade_durs[];
 extern const leds_animation_t s02;
-extern const rgbcolor_t s03_frames[][5];
-extern const uint16_t s03_durations[];
-extern const uint16_t s03_fade_durs[];
-extern const leds_animation_t s03;
 extern const rgbcolor_t u00_frames[][5];
 extern const uint16_t u00_durations[];
 extern const uint16_t u00_fade_durs[];
@@ -158,10 +158,10 @@ extern const leds_animation_t u02;
 #define ANIM_H07 14
 #define ANIM_H08 15
 #define ANIM_H09 16
-#define ANIM_S00 17
-#define ANIM_S01 18
-#define ANIM_S02 19
-#define ANIM_S03 20
+#define ANIM_H10 17
+#define ANIM_S00 18
+#define ANIM_S01 19
+#define ANIM_S02 20
 #define ANIM_U00 21
 #define ANIM_U01 22
 #define ANIM_U02 23

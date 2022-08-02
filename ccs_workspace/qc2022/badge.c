@@ -60,10 +60,14 @@ uint8_t anim_unlocked(uint8_t id) {
         return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U02;
     // Special ambient animations:
     case ANIM_S00:
+        // Hot
+        return 1;
     case ANIM_S01:
+        // Cold
+        return 1;
     case ANIM_S02:
-    case ANIM_S03:
-        return is_uber(badge_conf.badge_id);
+        // Party
+        return 1;
     }
 
     // Otherwise, it's not something we can unlock.
@@ -211,8 +215,8 @@ void badge_init() {
         // This is our first time turning on.
     }
 
-    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
+//    leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);
 //    leds_start_anim_by_id(ANIM_META_STARTUP_SPIN, 5, 0, 0);
-    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
-    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 0); // TODO
+//    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
+    leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 1); // TODO
 }
