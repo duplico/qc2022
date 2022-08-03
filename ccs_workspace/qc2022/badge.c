@@ -26,7 +26,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .ubers_seen_count = 0,
 };
 
-uint8_t badge_bling_button_pressed;
+uint8_t badge_bling_button_pressed = 1; // Skip the first bling after startup.
 
 uint8_t anim_unlocked(uint8_t id) {
     if (id < ANIM_H00) {
