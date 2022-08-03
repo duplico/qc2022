@@ -158,6 +158,15 @@ void serial_ll_handle_rx() {
         break;
     case SERIAL_OPCODE_STATQ:
         serial_ll_rx_seq = ((uint32_t) badge_conf.badges_seen_count) | ((uint32_t) badge_conf.ubers_seen_count << 8);
+        if (badge_conf.heat_unlocked) {
+            serial_ll_rx_seq |= ((uint32_t) 0b1 << 31);
+        }
+        if (badge_conf.cold_unlocked) {
+            serial_ll_rx_seq |= ((uint32_t) 0b1 << 30);
+        }
+        if (badge_conf.clock >= BADGE_UNLOCK_SECS_S02) {
+            serial_ll_rx_seq |= ((uint32_t) 0b1 << 29);
+        }
         serial_send_start(SERIAL_OPCODE_ACK);
         break;
     case SERIAL_OPCODE_HELO:
