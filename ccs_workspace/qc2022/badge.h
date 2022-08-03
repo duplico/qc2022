@@ -43,7 +43,7 @@
 #define BADGE_UNLOCK_SECS_S02 15
 
 // NB: These two are modded, so a power of 2 is preferred.
-#define BADGE_BLING_SECS 64
+#define BADGE_BLING_SECS 212400
 #define BADGE_CLOCK_WRITE_INTERVAL 16
 
 // SMCLK rate in Hz:
