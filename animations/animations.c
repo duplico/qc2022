@@ -155,8 +155,8 @@ const rgbcolor_t h03_frames[][5] = {
     {{0x0, 0x0, 0x0}, {0x80, 0x0, 0x80}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x80, 0x0}},
     {{0x80, 0x80, 0x80}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
 };
-const uint16_t h03_durations[] = {150, 150, 150, 150, 150};
-const uint16_t h03_fade_durs[] = {100, 100, 100, 100, 100};
+const uint16_t h03_durations[] = {250, 250, 250, 250, 250};
+const uint16_t h03_fade_durs[] = {150, 150, 150, 150, 150};
 // the animation:
 const leds_animation_t h03 = {h03_frames, h03_durations, h03_fade_durs, 5, ANIM_TYPE_SOLID};
 
