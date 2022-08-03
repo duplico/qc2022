@@ -26,6 +26,8 @@ badge_conf_t badge_conf = (badge_conf_t){
     .ubers_seen_count = 0,
 };
 
+uint8_t badge_bling_button_pressed;
+
 uint8_t anim_unlocked(uint8_t id) {
     if (id < ANIM_H00) {
         return 0;
@@ -263,6 +265,8 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
 }
 
 void badge_button_press_long() {
+    badge_bling_button_pressed = 1;
+
     static uint8_t brightness_level = 0;
     uint8_t brightness_levels[3] = {
         0,
@@ -279,13 +283,20 @@ void badge_button_press_long() {
 }
 
 void badge_button_press_short() {
+    badge_bling_button_pressed = 1;
+
     if (leds_is_ambient) {
         next_animation();
     }
 }
 
 void badge_bling() {
-    // Don't do it if we're not ambient.
+    // Don't do it if we're not ambient or have recently pressed a button.
+    if (badge_bling_button_pressed) {
+        badge_bling_button_pressed = 0;
+        return;
+    }
+
     if (!leds_is_ambient) {
         return;
     }
