@@ -115,10 +115,6 @@ extern const rgbcolor_t meta_startup_fade_frames[][5];
 extern const uint16_t meta_startup_fade_durations[];
 extern const uint16_t meta_startup_fade_fade_durs[];
 extern const leds_animation_t meta_startup_fade;
-extern const rgbcolor_t meta_startup_spin_frames[][5];
-extern const uint16_t meta_startup_spin_durations[];
-extern const uint16_t meta_startup_spin_fade_durs[];
-extern const leds_animation_t meta_startup_spin;
 extern const rgbcolor_t meta_z_brightness0_frames[][5];
 extern const uint16_t meta_z_brightness0_durations[];
 extern const uint16_t meta_z_brightness0_fade_durs[];
@@ -152,7 +148,7 @@ extern const uint16_t u01_durations[];
 extern const uint16_t u01_fade_durs[];
 extern const leds_animation_t u01;
 #define ANIM_COUNT 27
-#define ANIM_COUNT_INCL_META 37
+#define ANIM_COUNT_INCL_META 36
 #define ANIM_B00 0
 #define ANIM_B01 1
 #define ANIM_B02 2
@@ -186,12 +182,11 @@ extern const leds_animation_t u01;
 #define ANIM_META_PAIR 30
 #define ANIM_META_PAIRUBER 31
 #define ANIM_META_STARTUP_FADE 32
-#define ANIM_META_STARTUP_SPIN 33
-#define ANIM_META_Z_BRIGHTNESS0 34
-#define ANIM_META_Z_BRIGHTNESS1 35
-#define ANIM_META_Z_BRIGHTNESS2 36
+#define ANIM_META_Z_BRIGHTNESS0 33
+#define ANIM_META_Z_BRIGHTNESS1 34
+#define ANIM_META_Z_BRIGHTNESS2 35
 #define ANIM_TYPE_SOLID 0
 #define ANIM_TYPE_FASTTWINKLE 1
 #define ANIM_TYPE_SLOWTWINKLE 2
-extern const leds_animation_t *all_anims[37];
+extern const leds_animation_t *all_anims[36];
 #endif // _H_
