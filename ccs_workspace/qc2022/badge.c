@@ -271,6 +271,26 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
+
+    // This is called periodically, so we'll kick off ADC samples from here.
+    //  But only if needed.
+    if (!badge_conf.heat_unlocked || !badge_conf.cold_unlocked) {
+        ADCCTL0 |= ADCENC | ADCSC;
+    }
+}
+
+void badge_temp_unlock(uint8_t hot) {
+    if (hot) {
+        leds_start_anim_by_id(ANIM_S00, 0, 1, 0);
+        fram_unlock();
+        badge_conf.heat_unlocked = 1;
+        fram_lock();
+    } else {
+        leds_start_anim_by_id(ANIM_S01, 0, 1, 0);
+        fram_unlock();
+        badge_conf.cold_unlocked = 1;
+        fram_lock();
+    }
 }
 
 void badge_button_press_long() {

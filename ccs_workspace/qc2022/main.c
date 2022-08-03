@@ -34,6 +34,8 @@ uint8_t button_state;
 volatile uint8_t f_time_loop;
 volatile uint8_t f_long_press;
 volatile uint8_t f_bling;
+volatile uint8_t f_hot;
+volatile uint8_t f_cold;
 
 /// Initialize clock signals and the three system clocks.
 /**
@@ -156,6 +158,21 @@ void init_io() {
     PM5CTL0 &= ~LOCKLPM5;
 }
 
+void init_adc() {
+    // Configure ADC - Pulse sample mode; ADCSC trigger
+    ADCCTL0 |= ADCSHT_8 | ADCON;                                  // ADC ON,temperature sample period>30us
+    ADCCTL1 |= ADCSHP;                                            // s/w trig, single ch/conv, MODOSC
+    ADCCTL2 |= ADCRES;                                            // 10-bit conversion results
+    ADCMCTL0 |= ADCSREF_1 | ADCINCH_12;                           // ADC input ch A12 => temp sense
+    ADCIE |=ADCIE0;                                               // Enable the Interrupt request for a completed ADC_B conversion
+
+    // Configure reference
+    PMMCTL0_H = PMMPW_H;                                          // Unlock the PMM registers
+    PMMCTL2 |= INTREFEN | TSENSOREN;                              // Enable internal reference and temperature sensor
+    __delay_cycles(400);                                          // Delay for reference settling
+
+}
+
 void button_cb(tSensor *pSensor) {
 
     if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
@@ -182,6 +199,7 @@ int main(void) {
     // Configure board basics:
     init_clocks();
     init_io();
+    init_adc();
 
     // Enable interrupts.
     __bis_SR_register(GIE);
@@ -239,6 +257,16 @@ int main(void) {
             f_bling = 0;
         }
 
+        if (f_hot) {
+            badge_temp_unlock(1);
+            f_hot = 0;
+        }
+
+        if (f_cold) {
+            badge_temp_unlock(0);
+            f_cold = 0;
+        }
+
         // Check whether CapTIvate needs to be serviced.
         if (g_bConvTimerFlag)
         {
@@ -249,3 +277,54 @@ int main(void) {
         __bis_SR_register(LPM0_bits);
     } // End background loop
 }
+
+#define CALADC_15V_30C  *((unsigned int *)0x1A1A)                 // Temperature Sensor Calibration-30 C
+                                                                  // See device datasheet for TLV table memory mapping
+#define CALADC_15V_85C  *((unsigned int *)0x1A1C)                 // Temperature Sensor Calibration-85 C
+
+#pragma vector=ADC_VECTOR
+__interrupt void ADC_ISR(void)
+{
+    volatile int32_t temp;
+    volatile int32_t degF;
+    volatile int32_t degC;
+
+    switch(__even_in_range(ADCIV,ADCIV_ADCIFG))
+    {
+        case ADCIV_NONE:
+            break;
+        case ADCIV_ADCOVIFG:
+            break;
+        case ADCIV_ADCTOVIFG:
+            break;
+        case ADCIV_ADCHIIFG:
+            break;
+        case ADCIV_ADCLOIFG:
+            break;
+        case ADCIV_ADCINIFG:
+            break;
+        case ADCIV_ADCIFG:
+            temp = ADCMEM0;
+            // Temperature in Celsius
+            // The temperature (Temp, C)=
+            degC = (temp-CALADC_15V_30C)*(85-30)/(CALADC_15V_85C-CALADC_15V_30C)+30;
+
+            // Temperature in Fahrenheit
+            // Tf = (9/5)*Tc | 32
+            degF = 9*degC/5+32;
+
+            if (degF <= BADGE_UNLOCK_TEMP_UNDER_S01) {
+                f_cold = 1;
+            } else if (degF >= BADGE_UNLOCK_TEMP_OVER_S00) {
+                f_hot = 1;
+            } else {
+                break;
+            }
+
+            LPM0_EXIT;
+            break;
+        default:
+            break;
+    }
+}
+

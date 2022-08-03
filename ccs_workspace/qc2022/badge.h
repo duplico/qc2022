@@ -42,6 +42,9 @@
 
 #define BADGE_UNLOCK_SECS_S02 212400
 
+#define BADGE_UNLOCK_TEMP_OVER_S00 95
+#define BADGE_UNLOCK_TEMP_UNDER_S01 55
+
 // NB: These two are modded, so a power of 2 is preferred.
 #define BADGE_BLING_SECS 64
 #define BADGE_CLOCK_WRITE_INTERVAL 16
@@ -75,6 +78,10 @@ typedef struct {
     uint8_t ubers_seen_count;
     /// ID of the currently selected animation.
     uint8_t current_anim_id;
+    /// Status of the heat unlock.
+    uint8_t heat_unlocked;
+    /// Status of the cold unlock.
+    uint8_t cold_unlocked;
 } badge_conf_t;
 
 // Global-ish variables:
@@ -95,6 +102,7 @@ void next_animation();
 void badge_set_id(uint8_t id);
 inline void badge_set_time(uint32_t clock, uint8_t authority);
 void badge_set_seen(uint8_t id);
+void badge_temp_unlock(uint8_t hot);
 void badge_button_press_long();
 void badge_button_press_short();
 void badge_bling();
