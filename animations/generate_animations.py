@@ -29,7 +29,8 @@ color_corrections = {
     "bluegreen" : (0,255,255),
     "whitered" : (255,15,15),
     "whitegreen" : (15,255,15),
-    "whiteblue" : (15,15,255)
+    "whiteblue" : (15,15,255),
+    "redbluegray" : (0x80, 0, 0x80),
 }
 
 LED_COUNT = 5
