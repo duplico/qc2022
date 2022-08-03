@@ -4,7 +4,7 @@
 1 red
 2 green
 3 blue
-4 white
+4 gray
 
 solid
 0,0,0,4,0,400,200
