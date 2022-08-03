@@ -48,6 +48,7 @@ void rtc_init() {
 //  172800      Noon Friday
 //  212400      11pm Friday (party!)
 //  216000      Midnight Saturday morning
+//  302400      Midnight Monday morning
 
 #pragma vector=RTC_VECTOR
 __interrupt void RTC_ISR(void) {
