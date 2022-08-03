@@ -37,6 +37,18 @@ void rtc_init() {
              RTCIE;             // Enable interrupt.
 }
 
+// The clock is measured in seconds since noon Vegas time on Wednesday.
+// So, here are some example times:
+//  Seconds     Real time
+//  -------     ---------
+//  0           Noon Wednesday
+//  43200       Midnight Thursday morning
+//  86400       Noon Thursday
+//  129600      Midnight Friday morning
+//  172800      Noon Friday
+//  212400      11pm Friday (party!)
+//  216000      Midnight Saturday morning
+
 #pragma vector=RTC_VECTOR
 __interrupt void RTC_ISR(void) {
     // Called when the RTC overflows (100 times per second)
@@ -52,8 +64,8 @@ __interrupt void RTC_ISR(void) {
             rtc_centiseconds = 1;
             rtc_seconds++;
 
-            if (!(rtc_seconds % 64)) {
-                // Every 64 seconds, write our time to the config.
+            if (!(rtc_seconds % BADGE_CLOCK_WRITE_INTERVAL)) {
+                // Every BADGE_CLOCK_WRITE_INTERVAL seconds, write our time to the config.
                 badge_set_time(rtc_seconds, badge_conf.clock_authority);
             }
 
