@@ -43,7 +43,7 @@
 #define BADGE_UNLOCK_SECS_S02 15
 
 #define BADGE_UNLOCK_TEMP_OVER_S00 95
-#define BADGE_UNLOCK_TEMP_UNDER_S01 40
+#define BADGE_UNLOCK_TEMP_UNDER_S01 55
 
 // NB: These two are modded, so a power of 2 is preferred.
 #define BADGE_BLING_SECS 212400
