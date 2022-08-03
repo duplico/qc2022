@@ -2,7 +2,7 @@
 
 0 off
 1 redblue
-2 white
+2 gray
 3 green
 
 solid
