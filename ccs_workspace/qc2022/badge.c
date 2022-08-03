@@ -143,6 +143,9 @@ void badge_set_seen(uint8_t id) {
             leds_start_anim_by_id(ANIM_META_PAIR, 10, 0, 1);
         }
 
+        // Queue our connection count.
+        leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
+
         return;
     }
 
@@ -224,6 +227,9 @@ void badge_set_seen(uint8_t id) {
     if (new_anim_id != LEDS_ID_NO_ANIM) {
         leds_start_anim_by_id(new_anim_id, 0, 1, 0);
     }
+
+    // Queue our connection count.
+    leds_start_anim_by_id(ANIM_META_CONNECTS, 0, 0, 0);
 }
 
 /// Set badge ID in the configuration.
