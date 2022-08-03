@@ -33,7 +33,9 @@ uint8_t anim_unlocked(uint8_t id) {
         return 0;
     }
 
-    return 1;
+    if (((id >= ANIM_H00 && id <= ANIM_H14) || (id >= ANIM_U00 || id <= ANIM_U01)) && badge_conf.clock > BADGE_UNLOCK_SECS_ALL) {
+        return 1;
+    }
 
     // Check unlockable animations:
     switch(id) {
@@ -76,10 +78,10 @@ uint8_t anim_unlocked(uint8_t id) {
     // Special ambient animations:
     case ANIM_S00:
         // Hot
-        return 1;
+        return badge_conf.heat_unlocked;
     case ANIM_S01:
         // Cold
-        return 1;
+        return badge_conf.cold_unlocked;
     case ANIM_S02:
         // Party
         return badge_conf.clock >= BADGE_UNLOCK_SECS_S02;
