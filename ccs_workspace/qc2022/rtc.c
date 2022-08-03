@@ -61,17 +61,8 @@ __interrupt void RTC_ISR(void) {
         }
 
         if (rtc_centiseconds == 100) {
+            f_second = 1;
             rtc_centiseconds = 1;
-            rtc_seconds++;
-
-            if (!(rtc_seconds % BADGE_CLOCK_WRITE_INTERVAL)) {
-                // Every BADGE_CLOCK_WRITE_INTERVAL seconds, write our time to the config.
-                badge_set_time(rtc_seconds, badge_conf.clock_authority);
-            }
-
-            if (!(rtc_seconds % BADGE_BLING_SECS)) {
-                f_bling = 1;
-            }
         }
 
         LPM0_EXIT;

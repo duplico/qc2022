@@ -33,7 +33,7 @@ uint8_t button_state;
 // Interrupt flags
 volatile uint8_t f_time_loop;
 volatile uint8_t f_long_press;
-volatile uint8_t f_bling;
+volatile uint8_t f_second;
 volatile uint8_t f_hot;
 volatile uint8_t f_cold;
 
@@ -241,6 +241,21 @@ int main(void) {
             f_time_loop = 0;
         }
 
+        if (f_second) {
+            rtc_seconds++;
+
+            if (!(rtc_seconds % BADGE_CLOCK_WRITE_INTERVAL)) {
+                // Every BADGE_CLOCK_WRITE_INTERVAL seconds, write our time to the config.
+                badge_set_time(rtc_seconds, badge_conf.clock_authority);
+            }
+
+            if (!(rtc_seconds % BADGE_BLING_SECS)) {
+                badge_bling();
+            }
+
+            f_second = 0;
+        }
+
         if (f_serial_phy) {
             serial_phy_handle_rx();
             f_serial_phy = 0;
@@ -250,11 +265,6 @@ int main(void) {
             f_long_press = 0;
             button_state = 2;
             badge_button_press_long();
-        }
-
-        if (f_bling) {
-            badge_bling();
-            f_bling = 0;
         }
 
         if (f_hot) {
