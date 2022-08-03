@@ -21,12 +21,17 @@ badge_conf_t badge_conf = (badge_conf_t){
     .initialized = 0,
     .clock_authority = 0,
     .badges_seen = {0,},
-    .current_anim_id = 0,
+    .current_anim_id = ANIM_H00,
     .badges_seen_count = 0,
     .ubers_seen_count = 0,
 };
 
 uint8_t anim_unlocked(uint8_t id) {
+    // TODO: not this:
+    if (id < ANIM_H00) {
+        return 0;
+    }
+
     return 1;
 
     // Check unlockable animations:
@@ -58,6 +63,10 @@ uint8_t anim_unlocked(uint8_t id) {
         return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H11;
     case ANIM_H12:
         return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H12;
+    case ANIM_H13:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H13;
+    case ANIM_H14:
+        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H14;
     // Uber ambient animations:
     case ANIM_U00:
         return badge_conf.ubers_seen_count >= BADGE_UNLOCK_COUNT_U00;
@@ -213,7 +222,6 @@ void badge_bling() {
 
     // Choose which bling
     // Animate the bling
-    // TODO: Handle if number of blings changes
     leds_start_anim_by_id(ANIM_B00 + rand() % (1 + ANIM_B06 - ANIM_B00), 3, 0, 0);
 }
 
