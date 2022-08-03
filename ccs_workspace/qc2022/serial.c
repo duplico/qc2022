@@ -157,7 +157,6 @@ void serial_ll_handle_rx() {
         serial_send_start(SERIAL_OPCODE_ACK);
         break;
     case SERIAL_OPCODE_STATQ:
-        // TODO: any other special unlocks.
         serial_ll_rx_seq = ((uint32_t) badge_conf.badges_seen_count) | ((uint32_t) badge_conf.ubers_seen_count << 8);
         serial_send_start(SERIAL_OPCODE_ACK);
         break;
