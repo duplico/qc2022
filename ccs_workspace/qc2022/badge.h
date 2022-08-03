@@ -76,6 +76,7 @@ typedef struct {
 
 // Global-ish variables:
 extern badge_conf_t badge_conf;
+extern uint8_t badge_bling_button_pressed;
 extern volatile uint8_t f_time_loop;
 extern volatile uint8_t f_long_press;
 extern volatile uint8_t f_bling;
