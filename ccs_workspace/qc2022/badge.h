@@ -40,10 +40,10 @@
 #define BADGE_UNLOCK_COUNT_U00 1
 #define BADGE_UNLOCK_COUNT_U01 5
 
-#define BADGE_UNLOCK_SECS_S02 15
+#define BADGE_UNLOCK_SECS_S02 212400
 
 // NB: These two are modded, so a power of 2 is preferred.
-#define BADGE_BLING_SECS 212400
+#define BADGE_BLING_SECS 64
 #define BADGE_CLOCK_WRITE_INTERVAL 16
 
 // SMCLK rate in Hz:
