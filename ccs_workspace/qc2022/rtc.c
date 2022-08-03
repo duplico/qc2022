@@ -52,8 +52,8 @@ __interrupt void RTC_ISR(void) {
             rtc_centiseconds = 1;
             rtc_seconds++;
 
-            if (!(rtc_seconds % 64)) {
-                // Every 64 seconds, write our time to the config.
+            if (!(rtc_seconds % BADGE_CLOCK_WRITE_INTERVAL)) {
+                // Every BADGE_CLOCK_WRITE_INTERVAL seconds, write our time to the config.
                 badge_set_time(rtc_seconds, badge_conf.clock_authority);
             }
 

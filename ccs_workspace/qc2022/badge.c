@@ -82,7 +82,7 @@ uint8_t anim_unlocked(uint8_t id) {
         return 1;
     case ANIM_S02:
         // Party
-        return 1;
+        return badge_conf.clock >= BADGE_UNLOCK_SECS_S02;
     }
 
     // Otherwise, it's not something we can unlock.
@@ -254,10 +254,19 @@ void badge_set_id(uint8_t id) {
 
 /// Set the current time.
 inline void badge_set_time(uint32_t clock, uint8_t authority) {
+    rtc_seconds = clock;
+
     if (authority != badge_conf.clock_authority) {
         // If our authority is changing, acknowledge it.
         leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0, 1);
     }
+
+    // If it used to be too early to unlock the party, and now the party
+    //  is unlocked, go ahead and show it.
+    if (badge_conf.clock < BADGE_UNLOCK_SECS_S02 && clock >= BADGE_UNLOCK_SECS_S02) {
+        leds_start_anim_by_id(ANIM_S02, 0, 1, 0);
+    }
+
     fram_unlock();
     badge_conf.clock_authority = authority;
     badge_conf.clock = clock;
