@@ -430,19 +430,6 @@ const uint16_t meta_startup_fade_fade_durs[] = {750, 500, 500, 50};
 // the animation:
 const leds_animation_t meta_startup_fade = {meta_startup_fade_frames, meta_startup_fade_durations, meta_startup_fade_fade_durs, 4, ANIM_TYPE_SOLID};
 
-///////////////// META_STARTUP_SPIN:
-const rgbcolor_t meta_startup_spin_frames[][5] = {
-    {{0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0x0, 0x0, 0x0}},
-    {{0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0x0, 0x0, 0x0}, {0xff, 0xff, 0xff}},
-    {{0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0x0, 0x0, 0x0}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}},
-    {{0xff, 0xff, 0xff}, {0x0, 0x0, 0x0}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}},
-    {{0x0, 0x0, 0x0}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}},
-};
-const uint16_t meta_startup_spin_durations[] = {50, 50, 50, 50, 50};
-const uint16_t meta_startup_spin_fade_durs[] = {50, 50, 50, 50, 50};
-// the animation:
-const leds_animation_t meta_startup_spin = {meta_startup_spin_frames, meta_startup_spin_durations, meta_startup_spin_fade_durs, 5, ANIM_TYPE_SOLID};
-
 ///////////////// META_Z_BRIGHTNESS0:
 const rgbcolor_t meta_z_brightness0_frames[][5] = {
     {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0xf, 0x0, 0x0}},
@@ -547,4 +534,4 @@ const uint16_t u01_fade_durs[] = {400, 400, 400, 400, 400, 400};
 // the animation:
 const leds_animation_t u01 = {u01_frames, u01_durations, u01_fade_durs, 6, ANIM_TYPE_SOLID};
 
-const leds_animation_t *all_anims[37] = {&b00, &b01, &b02, &b03, &b04, &b05, &b06, &h00, &h01, &h02, &h03, &h04, &h05, &h06, &h07, &h08, &h09, &h10, &h11, &h12, &h13, &h14, &s00, &s01, &s02, &u00, &u01, &meta_connects, &meta_newpair, &meta_newuber, &meta_pair, &meta_pairuber, &meta_startup_fade, &meta_startup_spin, &meta_z_brightness0, &meta_z_brightness1, &meta_z_brightness2};
+const leds_animation_t *all_anims[36] = {&b00, &b01, &b02, &b03, &b04, &b05, &b06, &h00, &h01, &h02, &h03, &h04, &h05, &h06, &h07, &h08, &h09, &h10, &h11, &h12, &h13, &h14, &s00, &s01, &s02, &u00, &u01, &meta_connects, &meta_newpair, &meta_newuber, &meta_pair, &meta_pairuber, &meta_startup_fade, &meta_z_brightness0, &meta_z_brightness1, &meta_z_brightness2};
