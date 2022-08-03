@@ -22,7 +22,7 @@ badge_conf_t badge_conf = (badge_conf_t){
     .clock_authority = 0,
     .badges_seen = {0,},
     .current_anim_id = ANIM_H00,
-    .badges_seen_count = 0,
+    .badges_seen_count = 1, // I've seen myself.
     .ubers_seen_count = 0,
 };
 
@@ -37,11 +37,11 @@ uint8_t anim_unlocked(uint8_t id) {
     switch(id) {
     // Standard ambient animations:
     case ANIM_H00:
-        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H00;
+        return 1;
     case ANIM_H01:
-        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H01;
+        return 1;
     case ANIM_H02:
-        return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H02;
+        return 1;
     case ANIM_H03:
         return badge_conf.badges_seen_count >= BADGE_UNLOCK_COUNT_H03;
     case ANIM_H04:
@@ -159,10 +159,70 @@ void badge_set_seen(uint8_t id) {
 
     fram_lock();
 
+    uint8_t new_anim_id = LEDS_ID_NO_ANIM;
+
+    // Check to see if we hit a badge seen count that unlocks a new animation.
+    // This is up here, before we check to see if it's uber, so that the uber
+    //  new animation will be prioritized by overwriting this one.
+
+    switch(badge_conf.badges_seen_count) {
+    // The first three are starting animations and can be skipped.
+    case BADGE_UNLOCK_COUNT_H03:
+        new_anim_id = ANIM_H03;
+        break;
+    case BADGE_UNLOCK_COUNT_H04:
+        new_anim_id = ANIM_H04;
+        break;
+    case BADGE_UNLOCK_COUNT_H05:
+        new_anim_id = ANIM_H05;
+        break;
+    case BADGE_UNLOCK_COUNT_H06:
+        new_anim_id = ANIM_H06;
+        break;
+    case BADGE_UNLOCK_COUNT_H07:
+        new_anim_id = ANIM_H07;
+        break;
+    case BADGE_UNLOCK_COUNT_H08:
+        new_anim_id = ANIM_H08;
+        break;
+    case BADGE_UNLOCK_COUNT_H09:
+        new_anim_id = ANIM_H09;
+        break;
+    case BADGE_UNLOCK_COUNT_H10:
+        new_anim_id = ANIM_H10;
+        break;
+    case BADGE_UNLOCK_COUNT_H11:
+        new_anim_id = ANIM_H11;
+        break;
+    case BADGE_UNLOCK_COUNT_H12:
+        new_anim_id = ANIM_H12;
+        break;
+    case BADGE_UNLOCK_COUNT_H13:
+        new_anim_id = ANIM_H13;
+        break;
+    case BADGE_UNLOCK_COUNT_H14:
+        new_anim_id = ANIM_H14;
+        break;
+    }
+
     if (is_uber(id)) {
         leds_start_anim_by_id(ANIM_META_NEWUBER, 0, 0, 1);
+
+        // Determine whether we've unlocked a new animation:
+        switch(badge_conf.ubers_seen_count) {
+        case BADGE_UNLOCK_COUNT_U00:
+            new_anim_id = ANIM_U00;
+            break;
+        case BADGE_UNLOCK_COUNT_U01:
+            new_anim_id = ANIM_U01;
+            break;
+        }
     } else {
         leds_start_anim_by_id(ANIM_META_NEWPAIR, 0, 0, 1);
+    }
+
+    if (new_anim_id != LEDS_ID_NO_ANIM) {
+        leds_start_anim_by_id(new_anim_id, 0, 1, 0);
     }
 }
 
@@ -174,6 +234,11 @@ void badge_set_id(uint8_t id) {
     badge_conf.badge_id = id;
     set_id_buf(old_id, 0, badge_conf.badges_seen);
     set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
+    if (!is_uber(old_id) && is_uber(id)) {
+        badge_conf.ubers_seen_count++;
+    } else if (is_uber(old_id) && !is_uber(id)) {
+        badge_conf.ubers_seen_count--;
+    }
     fram_lock();
 
     leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 0, 0, 1);
