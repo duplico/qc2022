@@ -52,6 +52,7 @@
 
 // SMCLK rate in Hz:
 #define SMCLK_RATE_HZ 8000000
+#define MCLK_FREQ_MHZ 8
 
 // Dot correction configuration for the three colors:
 #define TLC_DC_RED 0x03
