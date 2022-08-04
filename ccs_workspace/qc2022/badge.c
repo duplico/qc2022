@@ -158,9 +158,11 @@ void badge_set_seen(uint8_t id) {
 
     set_id_buf(id, 2, badge_conf.badges_seen);
 
-    badge_conf.badges_seen_count++;
+    if (badge_conf.badges_seen_count < UINT8_MAX) {
+        badge_conf.badges_seen_count++;
+    }
 
-    if (is_uber(id)) {
+    if (is_uber(id) && badge_conf.ubers_seen_count < UINT8_MAX) {
         badge_conf.ubers_seen_count++;
     }
 
