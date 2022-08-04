@@ -1,12 +1,11 @@
 0 off
 1 white
-2 red
-3 green
-4 blue
+2 firebrick
+3 lightseagreen
+4 purple
 2 darkslategray
 
 slowtwinkle
-# TODO: use colors from meta_pair.txt
 0,0,0,1,0,140,25,
 0,0,0,1,2,80,25,
 2,0,0,1,0,80,25,
