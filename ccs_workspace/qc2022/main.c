@@ -37,7 +37,8 @@ volatile uint8_t f_second;
 volatile uint8_t f_hot;
 volatile uint8_t f_cold;
 
-void Software_Trim()
+/// Perform the TI-recommended software trim of the DCO per TI demo code.
+void dco_software_trim()
 {
     unsigned int oldDcoTap = 0xffff;
     unsigned int newDcoTap = 0xffff;
@@ -108,7 +109,7 @@ void Software_Trim()
 
 /// Initialize clock signals and the three system clocks.
 /**
- ** We'll take the DCO to 16 MHz, and divide it by 2 for MCLK.
+ ** We'll take the DCO to 8 MHz, and divide it by 1 for MCLK.
  ** Then we'll divide MCLK by 1 to get 8 MHz SMCLK.
  **
  ** Our available clock sources are:
@@ -124,6 +125,9 @@ void Software_Trim()
  **         (Available dividers: {1,2,4,8})
  **  ACLK: Sourced from REFO
  **         (the only available internal source)
+ **
+ ** So the only change we need to make is to the DCO and MCLK.
+ **
  */
 void init_clocks() {
 
@@ -133,10 +137,11 @@ void init_clocks() {
     CSCTL2 = FLLD_0 + 243;                  // DCODIV = 8MHz
     __delay_cycles(3);
     __bic_SR_register(SCG0);                // enable FLL
-    Software_Trim();                        // Software Trim to get the best DCOFTRIM value
+    dco_software_trim();                        // Software Trim to get the best DCOFTRIM value
 
     CSCTL4 = SELMS__DCOCLKDIV | SELA__REFOCLK; // set default REFO(~32768Hz) as ACLK source, ACLK = 32768Hz
-    // default DCODIV as MCLK and SMCLK source
+
+    // default DCODIV as MCLK and SMCLK source; no need to modify CSCTL5.
 }
 
 /// Apply the initial configuration of the GPIO and peripheral pins.
