@@ -244,7 +244,8 @@ void leds_start_anim_by_id(uint8_t anim_id, uint8_t loop, uint8_t ambient, uint8
 
     // If there's nothing in the queue, and the current animation is ambient, we can
     //  start this animation directly.
-    if (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM) {
+    // Alternatively, if clearqueue is set, we clobber the current animation anyway.
+    if (clearqueue || (leds_is_ambient && leds_anim_queue_ids[0] == LEDS_ID_NO_ANIM)) {
         leds_start_anim_by_struct(all_anims[anim_id], loop, ambient);
         leds_anim_id = anim_id;
     } else {
