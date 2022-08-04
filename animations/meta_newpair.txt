@@ -1,8 +1,8 @@
 0 off
 1 white
-2 red
-3 green
-4 blue
+2 firebrick
+3 lightseagreen
+4 purple
 2 darkslategray
 
 slowtwinkle
