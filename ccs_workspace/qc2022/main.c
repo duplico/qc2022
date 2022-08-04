@@ -246,7 +246,7 @@ int main(void) {
 
             if (!(rtc_seconds % BADGE_CLOCK_WRITE_INTERVAL)) {
                 // Every BADGE_CLOCK_WRITE_INTERVAL seconds, write our time to the config.
-                badge_set_time(rtc_seconds, badge_conf.clock_authority);
+                badge_set_time(rtc_seconds, badge_clock_authority);
             }
 
             if (!(rtc_seconds % BADGE_BLING_SECS)) {

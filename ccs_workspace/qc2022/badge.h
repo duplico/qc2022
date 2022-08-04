@@ -67,8 +67,6 @@ typedef struct {
     uint16_t badge_id;
     /// Whether the badge has a config created for it.
     uint8_t initialized;
-    /// Whether this badge thinks it has an authoritative clock.
-    uint8_t clock_authority;
     /// This badge's time clock, in seconds since Wednesday at 8 PM Vegas time.
     uint32_t clock;
     /// Bitfield tracking badge IDs seen.
@@ -87,6 +85,7 @@ typedef struct {
 
 // Global-ish variables:
 extern badge_conf_t badge_conf;
+extern uint8_t badge_clock_authority;
 extern uint8_t badge_bling_button_pressed;
 extern volatile uint8_t f_time_loop;
 extern volatile uint8_t f_long_press;

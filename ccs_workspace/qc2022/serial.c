@@ -120,7 +120,7 @@ void serial_send_start(uint8_t opcode) {
 
     // Set the rest of the parameters:
     serial_message_out.last_clock = rtc_seconds;
-    serial_message_out.clock_is_set = badge_conf.clock_authority;
+    serial_message_out.clock_is_set = badge_clock_authority;
     serial_message_out.from_id = badge_conf.badge_id;
     crc16_apply(&serial_message_out);
     serial_phy_state_tx = SERIAL_PHY_STATE_IDLE;
@@ -135,17 +135,17 @@ void serial_ll_handle_rx() {
 
     // Deal with clock setting first and foremost.
     // We accept another badge's clock under the following conditions:
-    if (!badge_conf.clock_authority && serial_message_in.clock_is_set) {
+    if (!badge_clock_authority && serial_message_in.clock_is_set) {
         //  * Our clock is not authoritative, and the other clock is.
         //    (in this case, our clock is then set to authoritative)
         badge_set_time(serial_message_in.last_clock, 1);
-    } else if (badge_conf.clock_authority == serial_message_in.clock_is_set &&
+    } else if (badge_clock_authority == serial_message_in.clock_is_set &&
                serial_message_in.last_clock > badge_conf.clock + BADGE_CLOCK_DRIFT_ALLOWED_SECONDS) {
         //  * Both clocks' authoritative-ness is the same (i.e. both are
         //     authoritative, or both are non-authoritative), but the other
         //     clock is at least BADGE_CLOCK_DRIFT_ALLOWED_SECONDS in the future.
         //     (in this case, our authoritative-ness is unchanged)
-        badge_set_time(serial_message_in.last_clock, badge_conf.clock_authority);
+        badge_set_time(serial_message_in.last_clock, badge_clock_authority);
     }
 
     // Now do other needed stuff. If these generate animations, they'll replace any

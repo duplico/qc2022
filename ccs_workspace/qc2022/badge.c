@@ -19,12 +19,14 @@
 badge_conf_t badge_conf = (badge_conf_t){
     .badge_id = BADGE_ID_UNASSIGNED,
     .initialized = 0,
-    .clock_authority = 0,
     .badges_seen = {0,},
     .current_anim_id = ANIM_H00,
     .badges_seen_count = 1, // I've seen myself.
     .ubers_seen_count = 0,
 };
+
+/// Whether this badge thinks it has an authoritative clock.
+uint8_t badge_clock_authority = 0;
 
 uint8_t badge_bling_button_pressed = 1; // Skip the first bling after startup.
 
@@ -260,11 +262,6 @@ void badge_set_id(uint8_t id) {
 inline void badge_set_time(uint32_t clock, uint8_t authority) {
     rtc_seconds = clock;
 
-    if (authority != badge_conf.clock_authority) {
-        // If our authority is changing, acknowledge it.
-        leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 0, 0, 1);
-    }
-
     // If it used to be too early to unlock the party, and now the party
     //  is unlocked, go ahead and show it.
     if (badge_conf.clock < BADGE_UNLOCK_SECS_S02 && clock >= BADGE_UNLOCK_SECS_S02) {
@@ -272,7 +269,7 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     }
 
     fram_unlock();
-    badge_conf.clock_authority = authority;
+    badge_clock_authority = authority;
     badge_conf.clock = clock;
     fram_lock();
 
