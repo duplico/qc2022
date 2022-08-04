@@ -339,8 +339,8 @@ const rgbcolor_t meta_connects_frames[][5] = {
     {{0xf, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0xf, 0x0, 0x0}},
     {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0xf, 0x0, 0x0}},
 };
-const uint16_t meta_connects_durations[] = {800, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 2500};
-const uint16_t meta_connects_fade_durs[] = {120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 2000};
+const uint16_t meta_connects_durations[] = {900, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 2500};
+const uint16_t meta_connects_fade_durs[] = {150, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 120, 2000};
 // the animation:
 const leds_animation_t meta_connects = {meta_connects_frames, meta_connects_durations, meta_connects_fade_durs, 15, ANIM_TYPE_SOLID};
 
@@ -424,11 +424,12 @@ const rgbcolor_t meta_startup_fade_frames[][5] = {
     {{0xff, 0x0, 0x0}, {0xff, 0x0, 0x0}, {0xff, 0x0, 0x0}, {0xff, 0x0, 0x0}, {0xff, 0x0, 0x0}},
     {{0xff, 0xa5, 0x0}, {0xff, 0xa5, 0x0}, {0xff, 0xa5, 0x0}, {0xff, 0xa5, 0x0}, {0xff, 0xa5, 0x0}},
     {{0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff}},
+    {{0xff, 0x40, 0xf}, {0xff, 0x40, 0xf}, {0xff, 0x40, 0xf}, {0xff, 0x40, 0xf}, {0xff, 0x40, 0xf}},
 };
-const uint16_t meta_startup_fade_durations[] = {750, 500, 500, 950};
-const uint16_t meta_startup_fade_fade_durs[] = {750, 500, 500, 50};
+const uint16_t meta_startup_fade_durations[] = {750, 500, 500, 950, 500};
+const uint16_t meta_startup_fade_fade_durs[] = {750, 500, 500, 50, 100};
 // the animation:
-const leds_animation_t meta_startup_fade = {meta_startup_fade_frames, meta_startup_fade_durations, meta_startup_fade_fade_durs, 4, ANIM_TYPE_SOLID};
+const leds_animation_t meta_startup_fade = {meta_startup_fade_frames, meta_startup_fade_durations, meta_startup_fade_fade_durs, 5, ANIM_TYPE_SOLID};
 
 ///////////////// META_Z_BRIGHTNESS0:
 const rgbcolor_t meta_z_brightness0_frames[][5] = {

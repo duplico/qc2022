@@ -31,6 +31,7 @@ color_corrections = {
     "whitegreen" : (15,255,15),
     "whiteblue" : (15,15,255),
     "redbluegray" : (0x80, 0, 0x80),
+    "zarathustra" : (255, 64, 15),
 }
 
 LED_COUNT = 5
