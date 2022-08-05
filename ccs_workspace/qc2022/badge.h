@@ -68,7 +68,7 @@ typedef struct {
     uint16_t badge_id;
     /// Whether the badge has a config created for it.
     uint8_t initialized;
-    /// This badge's time clock, in seconds since Wednesday at 8 PM Vegas time.
+    /// This badge's time clock, in seconds since Wednesday at noon Vegas time.
     uint32_t clock;
     /// Bitfield tracking badge IDs seen.
     uint8_t badges_seen[BADGES_SEEN_BUFFER_LEN_BYTES];
