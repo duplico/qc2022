@@ -7,7 +7,7 @@ COLOR_SCALE_FACTOR = 1.0
 color_corrections = {
     "default" : (40,240,178),
     "off" : (0,0,0),
-    "pink" : (240, 20, 60),
+    "pink" : (220, 40, 40),
     "bipink" : (0xff, 0, 0xb0),
     "bimiddle" : (0x53, 0x1f, 0x66),
     "biblue" : (0x50, 0, 0xff),
