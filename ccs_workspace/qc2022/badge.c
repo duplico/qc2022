@@ -28,8 +28,10 @@ badge_conf_t badge_conf = (badge_conf_t){
 /// Whether this badge thinks it has an authoritative clock.
 uint8_t badge_clock_authority = 0;
 
+/// Whether the next bling anomation should be skipped.
 uint8_t badge_bling_button_pressed = 1; // Skip the first bling after startup.
 
+/// Returns whether an animation with the selected id is unlocked.
 uint8_t anim_unlocked(uint8_t id) {
     if (id < ANIM_H00) {
         return 0;
@@ -105,6 +107,7 @@ inline void fram_lock() {
     __bis_SR_register(GIE);
 }
 
+/// Switch to the next unlocked animation.
 void next_animation() {
     uint8_t candidate = badge_conf.current_anim_id;
 
@@ -117,6 +120,7 @@ void next_animation() {
     fram_unlock();
     badge_conf.current_anim_id = candidate;
     fram_lock();
+    // Below, clearqueue is DONTCARE, but I don't have time to test it a change.
     leds_start_anim_by_id(badge_conf.current_anim_id, 0, 1, 1);
 }
 
@@ -280,6 +284,7 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     }
 }
 
+/// Callback for its being very hot or very cold for the first time.
 void badge_temp_unlock(uint8_t hot) {
     if (hot) {
         leds_start_anim_by_id(ANIM_S00, 0, 1, 0);
@@ -294,6 +299,7 @@ void badge_temp_unlock(uint8_t hot) {
     }
 }
 
+/// Callback for a long button press.
 void badge_button_press_long() {
     badge_bling_button_pressed = 1;
 
@@ -312,6 +318,7 @@ void badge_button_press_long() {
     leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0, 1);
 }
 
+/// Callback for a short button press.
 void badge_button_press_short() {
     badge_bling_button_pressed = 1;
 
@@ -320,14 +327,11 @@ void badge_button_press_short() {
     }
 }
 
+/// Call this when it's time for the badge to bling, even if you're not sure it should.
 void badge_bling() {
     // Don't do it if we're not ambient or have recently pressed a button.
-    if (badge_bling_button_pressed) {
+    if (badge_bling_button_pressed || !leds_is_ambient) {
         badge_bling_button_pressed = 0;
-        return;
-    }
-
-    if (!leds_is_ambient) {
         return;
     }
 
@@ -336,6 +340,7 @@ void badge_bling() {
     leds_start_anim_by_id(ANIM_B00 + rand() % (1 + ANIM_B06 - ANIM_B00), 3, 0, 0);
 }
 
+/// Returns the number of lights that should be lit to represent the current badge_seen_count.
 uint8_t badge_count_lights() {
     if (badge_conf.badges_seen_count >= BADGES_SEEN_MAX_DISP) {
         return 15;
