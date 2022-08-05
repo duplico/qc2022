@@ -213,7 +213,7 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
 
     leds_anim_looping = loop;
     if (animation == all_anims[ANIM_META_CONNECTS]) {
-        leds_anim_length = leds_current_anim->len - badge_count_lights() + 1;
+        leds_anim_length = leds_current_anim->len - badge_count_lights();
     } else {
         leds_anim_length = leds_current_anim->len;
     }
