@@ -132,6 +132,7 @@ extern uint8_t badge_bling_button_pressed;
 extern volatile uint8_t f_time_loop;
 extern volatile uint8_t f_long_press;
 extern volatile uint8_t f_second;
+extern uint8_t button_state;
 
 // Utility functions:
 uint8_t check_id_buf(uint8_t id, uint8_t *buf);
