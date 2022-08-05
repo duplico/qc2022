@@ -8,60 +8,100 @@
 #ifndef BADGE_H_
 #define BADGE_H_
 
+// Configuration defines.
+
+/// Valid badge ID but indicating it hasn't been assigned by a controller.
 #define BADGE_ID_UNASSIGNED 250
+/// The ID used only by a controller device to set IDs and times.
 #define CONTROLLER_ID 251
 
+/// The lowest badge ID that is an uber/awesome badge.
 #define BADGE_ID_UBER_START 201
+/// The maximum number of uber/awesome badges.
 #define BADGE_ID_UBER_COUNT 20
 
-#define BADGES_SEEN_BUFFER_LEN_BYTES 32
-
+/// The number of unique badges to add a dot to the badge count display.
 #define BADGES_SEEN_PER_DISP 6
+/// The number of badges required to fill the badge count display.
 #define BADGES_SEEN_MAX_DISP (BADGES_SEEN_PER_DISP * 14)
 
+/// Number of seconds to prevent pairing activity after a successful pair.
 #define BADGE_PAIR_COOLDOWN 8
+/// Seconds a remote badge needs to be in the future to accept its clock.
 #define BADGE_CLOCK_DRIFT_ALLOWED_SECONDS 300 // 5 minutes
 
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H00 0
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H01 0
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H02 0
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H03 2
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H04 5
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H05 10
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H06 20
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H07 21
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H08 22
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H09 23
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H10 35
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H11 45
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H12 55
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H13 65
+/// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H14 BADGES_SEEN_MAX_DISP
 
+/// Number of unique pairings with uber badges to unlock this animation.
 #define BADGE_UNLOCK_COUNT_U00 1
+/// Number of unique pairings with uber badges to unlock this animation.
 #define BADGE_UNLOCK_COUNT_U01 5
 
+/// Number of seconds that must have passed to unlock this animation.
 #define BADGE_UNLOCK_SECS_S02 212400
+
+/// Number of seconds that must pass to unlock ALL animations.
 #define BADGE_UNLOCK_SECS_ALL 302400
 
+/// Temperature in Fahrenheit over which to unlock this animation.
 #define BADGE_UNLOCK_TEMP_OVER_S00 95
+/// Temperature in Fahrenheit under which to unlock this animation.
 #define BADGE_UNLOCK_TEMP_UNDER_S01 55
 
-// NB: These two are modded, so a power of 2 is preferred.
+/// Bling animation interval in seconds. preferably a power of 2.
 #define BADGE_BLING_SECS 64
+/// Badge clock write interval in seconds. preferably a power of 2.
 #define BADGE_CLOCK_WRITE_INTERVAL 16
 
-// SMCLK rate in Hz:
-#define SMCLK_RATE_HZ 8000000
+/// MCLK rate in MHZ.
 #define MCLK_FREQ_MHZ 8
+/// SMCLK rate in Hz.
+#define SMCLK_RATE_HZ 8000000
 
-// Dot correction configuration for the three colors:
+/// Baseline multiplier for dot correction for red LEDs.
 #define TLC_DC_RED 0x03
+/// Baseline multiplier for dot correction for green LEDs.
 #define TLC_DC_GRN 0x01
+/// Baseline multiplier for dot correction for blue LEDs.
 #define TLC_DC_BLU 0x02
 
-// Global brightness correct:
+/// Default global brightness correct for LEDs.
 #define TLC_BC 0x00 // 25%
+
+
+// System values, not really config.
+
+/// Number of bytes in the bitfield of all badge IDs.
+#define BADGES_SEEN_BUFFER_LEN_BYTES 32
 
 /// Badge config struct definition
 typedef struct {
@@ -69,7 +109,7 @@ typedef struct {
     uint16_t badge_id;
     /// Whether the badge has a config created for it.
     uint8_t initialized;
-    /// This badge's time clock, in seconds since Wednesday at 8 PM Vegas time.
+    /// This badge's time clock, in seconds since Wednesday at noon Vegas time.
     uint32_t clock;
     /// Bitfield tracking badge IDs seen.
     uint8_t badges_seen[BADGES_SEEN_BUFFER_LEN_BYTES];
