@@ -161,9 +161,9 @@ void leds_set_gs(const rgbcolor16_t* colors) {
     {
         if (leds_current_anim == all_anims[ANIM_U00]) {
             // If this is the quaternary counter animation, do something special.
-            r = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 0))) ? 65000 : 0;
-            g = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 1))) ? 65000 : 0;
-            b = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 2))) ? 65000 : 0;
+            r = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 0))) ? 35000 : 0;
+            g = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 1))) ? 35000 : 0;
+            b = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 2))) ? 35000 : 0;
         } else {
             r = colors[stoplight_index].red;
             g = colors[stoplight_index].green;

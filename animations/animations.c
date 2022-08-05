@@ -511,7 +511,7 @@ const leds_animation_t s02 = {s02_frames, s02_durations, s02_fade_durs, 1, ANIM_
 const rgbcolor_t u00_frames[][5] = {
     {{0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}, {0x0, 0x0, 0x0}},
 };
-const uint16_t u00_durations[] = {70};
+const uint16_t u00_durations[] = {125};
 const uint16_t u00_fade_durs[] = {0};
 // the animation:
 const leds_animation_t u00 = {u00_frames, u00_durations, u00_fade_durs, 1, ANIM_TYPE_SOLID};
