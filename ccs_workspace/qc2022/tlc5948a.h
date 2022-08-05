@@ -1,7 +1,12 @@
-/*
- * leds.h
- * (c) 2014 George Louthan
- * 3-clause BSD license; see license.md.
+/// Low-level driver header for TI TLC5948A PWM LED controller.
+/**
+ ** Header for the low-level LED driver. It also contains some hardware-level
+ ** configuration in preprocessor defines.
+ **
+ ** \file tlc5948a.h
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2016-2022 George Louthan @duplico. MIT License.
  */
 
 #ifndef TLC5948A_H_
@@ -11,17 +16,23 @@
 
 // Defines for pins:
 
-// Defines for the TLC:
+/// The DriverLib GPIO_PORT for the LATCH line.
 #define TLC_LATPORT GPIO_PORT_P1
+/// The pin for the LATCH line, DriverLib style.
 #define TLC_LATPIN  GPIO_PIN7
 
+/// The built-in register PxOUT for the LATCH line.
 #define LAT_POUT    P1OUT
+/// The built-in pin bit in register LAT_POUT for the LATCH line.
 #define LAT_PBIT    BIT7
 
-// LED sending types:
+/// Idle state of the low-level SPI state machine.
 #define TLC_SEND_IDLE     0
+/// Grayscale sending state of the low-level SPI state machine.
 #define TLC_SEND_TYPE_GS  1
+/// Function data sending state of the low-level SPI state machine.
 #define TLC_SEND_TYPE_FUN 2
+/// Loopback testing state of the low-level SPI state machine.
 #define TLC_SEND_TYPE_LB  3
 
 extern uint8_t tlc_send_type;
