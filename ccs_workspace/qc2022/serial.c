@@ -78,7 +78,7 @@ uint8_t validate_message(serial_message_t *message) {
     switch(message->opcode) {
     case SERIAL_OPCODE_HELO:
     case SERIAL_OPCODE_ACK:
-        if (message->from_id >= BADGES_IN_SYSTEM) {
+        if (message->from_id >= BADGE_ID_UNASSIGNED) {
             // (highest valid badge ID is BADGES_IN_SYSTEM-1)
             // A controller shouldn't send HELO or ACK.
             return 0;
@@ -86,7 +86,7 @@ uint8_t validate_message(serial_message_t *message) {
         break;
     case SERIAL_OPCODE_SETID:
         // Validate our incoming new ID.
-        if (message->payload > BADGES_IN_SYSTEM) {
+        if (message->payload > BADGE_ID_UNASSIGNED) {
             return 0;
         }
     // Fall through...
