@@ -340,6 +340,7 @@ uint8_t badge_count_lights() {
     if (badge_conf.badges_seen_count >= BADGES_SEEN_MAX_DISP) {
         return 15;
     }
+
     return 1 + badge_conf.badges_seen_count/BADGES_SEEN_PER_DISP;
 }
 
