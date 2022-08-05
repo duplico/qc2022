@@ -61,12 +61,13 @@ uint8_t leds_dirty = 1;
 
 uint8_t led_animation_state = 0;
 
-uint8_t leds_anim_frame;
+uint16_t leds_anim_frame_quaternary_saved;
+uint16_t leds_anim_frame;
 uint8_t leds_anim_id;
 uint8_t leds_ambient_anim_id;
 uint8_t leds_is_ambient = 1;
 uint8_t leds_anim_looping;
-uint8_t leds_anim_length;
+uint16_t leds_anim_length;
 uint8_t leds_force_twinkle;
 uint16_t leds_hold_steps;
 uint16_t leds_hold_index;
@@ -158,9 +159,16 @@ void leds_set_gs(const rgbcolor16_t* colors) {
 
     for (uint8_t stoplight_index = 0; stoplight_index < LED_COUNT; stoplight_index++)
     {
-        r = colors[stoplight_index].red;
-        g = colors[stoplight_index].green;
-        b = colors[stoplight_index].blue;
+        if (leds_current_anim == all_anims[ANIM_U00]) {
+            // If this is the quaternary counter animation, do something special.
+            r = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 0))) ? 65000 : 0;
+            g = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 1))) ? 65000 : 0;
+            b = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 2))) ? 65000 : 0;
+        } else {
+            r = colors[stoplight_index].red;
+            g = colors[stoplight_index].green;
+            b = colors[stoplight_index].blue;
+        }
 
         if (leds_force_twinkle || leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
             if (leds_twinkle_bits & (1 << stoplight_index)) {
@@ -181,6 +189,15 @@ void leds_set_gs(const rgbcolor16_t* colors) {
 }
 
 void leds_set_steps_and_go() {
+    if (leds_current_anim == all_anims[ANIM_U00]) {
+        // Super special case.
+        leds_hold_steps = leds_current_anim->durations[0] / TICKS_PER_LED_ANIM_DUR;
+        leds_hold_index = 0;
+        leds_transition_steps = leds_current_anim->fade_durs[0] / TICKS_PER_LED_ANIM_DUR;
+        leds_transition_index = 0;
+        leds_anim_frame_quaternary_saved = leds_anim_frame;
+        return;
+    }
     leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
     leds_hold_index = 0;
     leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
@@ -214,6 +231,9 @@ void leds_start_anim_by_struct(const leds_animation_t *animation, uint8_t loop, 
     leds_anim_looping = loop;
     if (animation == all_anims[ANIM_META_CONNECTS]) {
         leds_anim_length = leds_current_anim->len + 1 - badge_count_lights();
+    } else if (animation == all_anims[ANIM_U00]) {
+        leds_anim_length = 32768;
+        leds_anim_frame = leds_anim_frame_quaternary_saved;
     } else {
         leds_anim_length = leds_current_anim->len;
     }
