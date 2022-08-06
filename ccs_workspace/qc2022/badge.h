@@ -25,7 +25,7 @@
 #define BADGE_ID_UBER_COUNT 20
 
 /// The number of unique badges to add a dot to the badge count display.
-#define BADGES_SEEN_PER_DISP 6
+#define BADGES_SEEN_PER_DISP 10
 /// The number of badges required to fill the badge count display.
 #define BADGES_SEEN_MAX_DISP (BADGES_SEEN_PER_DISP * 14)
 
@@ -63,7 +63,7 @@
 /// Number of unique pairings required to unlock the animation with this ID.
 #define BADGE_UNLOCK_COUNT_H13 65
 /// Number of unique pairings required to unlock the animation with this ID.
-#define BADGE_UNLOCK_COUNT_H14 BADGES_SEEN_MAX_DISP
+#define BADGE_UNLOCK_COUNT_H14 99
 
 /// Number of unique pairings with uber badges to unlock this animation.
 #define BADGE_UNLOCK_COUNT_U00 1
