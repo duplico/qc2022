@@ -65,5 +65,5 @@ uint16_t buffer_rank(uint8_t *buf, uint8_t len) {
 }
 
 uint8_t is_uber(uint8_t id) {
-    return (id > BADGE_ID_UBER_START) && (id < BADGE_ID_UBER_START + BADGE_ID_UBER_COUNT);
+    return (id >= BADGE_ID_UBER_START) && (id < BADGE_ID_UBER_START + BADGE_ID_UBER_COUNT);
 }
