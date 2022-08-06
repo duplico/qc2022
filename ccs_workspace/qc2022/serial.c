@@ -94,6 +94,8 @@ uint8_t validate_message(serial_message_t *message) {
             return 0;
         }
         break;
+    default:
+        return 0; // Don't accept any other opcodes.
     }
     return 1;
 }

@@ -38,11 +38,10 @@
 
 // Types and structs
 typedef struct {
-    uint16_t proto_version;
+    uint16_t from_id;
     __packed uint8_t opcode;
-    __packed uint8_t from_id;
-    __packed uint32_t last_clock;
     __packed uint8_t clock_is_set;
+    uint32_t last_clock;
     uint32_t payload;
     uint16_t crc16;
 } serial_message_t;
