@@ -285,7 +285,7 @@ void badge_set_id(uint8_t id) {
         srand(badge_conf.badge_id);
     }
 
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 5, 0, 1);
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS2, 5, 0, 1);
 }
 
 /// Set the current time.
