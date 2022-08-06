@@ -124,6 +124,7 @@ uint8_t leds_twinkle_bits = 0xea;
 /// System tick counter used only for twinkling.
 uint16_t leds_anim_adjustment_index = 0;
 
+/// Pre-baked expression for the shift from 8-bit color to 16-bit output color.
 #define BRIGHTNESS_SHIFT (6 + badge_brightness_level)
 
 /// Start a new frame, setting up current, source, dest, and step.
