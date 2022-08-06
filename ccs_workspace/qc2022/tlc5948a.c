@@ -20,7 +20,7 @@
  ** \file tlc5948a.c
  ** \author George Louthan
  ** \date   2022
- ** \copyright (c) 2016-2022 George Louthan @duplico. MIT License.
+ ** \copyright (c) 2015-2022 George Louthan @duplico. MIT License.
  */
 
 #include "tlc5948a.h"
