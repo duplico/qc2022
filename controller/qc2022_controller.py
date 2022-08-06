@@ -17,6 +17,8 @@ MESSAGE_FMT_NOCRC = '<HBBII'
 SerialMessage = namedtuple('Message', 'from_id opcode clock_is_set last_clock payload crc16')
 CRC_FMT = '<H'
 
+ser = None
+
 def crc16_buf(sbuf):
     crc = CRC_SEED
 
@@ -53,6 +55,7 @@ def await_ack(ser, payload=None):
     return msg.payload
 
 def time_seconds():
+    # TODO:
     return 0
 
 def send_message(ser, opcode, payload=0x00000000, src_id=CONTROLLER_ID):
@@ -65,16 +68,14 @@ def serial_obj(port):
     return serial.Serial(port, 230400, parity=serial.PARITY_NONE)
 
 @click.command()
-@click.argument('port')
-def set_time(port):
-    # TODO: Send a HELO or something with the time
+@click.argument('seconds', type=int)
+def set_time(seconds):
+    # TODO: Send a STATQ with the time
     pass
 
 @click.command()
-@click.argument('port')
 @click.argument('id', type=int)
-def set_id(port, id):
-    ser = serial_obj(port)
+def set_id(id):
     send_message(
         ser,
         SERIAL_OPCODE_SETID,
@@ -86,13 +87,20 @@ def set_id(port, id):
     print("ID set to %d" % id_set)
 
 @click.command()
-@click.argument('port')
-def statq(port):
-    pass
+def statq():
+    send_message(
+        ser,
+        SERIAL_OPCODE_STATQ,
+    )
+    stat_dump = await_ack(ser)
+    # TODO: Decode stat_dump
+    print(stat_dump)
 
 @click.group(commands=[set_id, statq, set_time])
-def controller():
-    pass
+@click.argument('port')
+def controller(port):
+    global ser
+    ser = serial_obj(port)
 
 if __name__ == '__main__':
     controller()
