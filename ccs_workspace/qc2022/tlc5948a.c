@@ -1,7 +1,26 @@
-/*
- * tlc5948a.c
- * (c) 2016 George Louthan
- * 3-clause BSD license; see license.md.
+/// Low-level driver for TI TLC5948A PWM LED controller.
+/**
+ ** This driver controls the TLC5948A LED controller. Its job is simply to
+ ** keep the display going. Application logic, including animations or other
+ ** instructions to change the LEDs based on desired application behavior.
+ ** All the animation logic lives in the leds.c module.
+ **
+ ** In order to use this driver, the application should directly manipulate
+ ** the tlc_gs_data buffer, which holds 16 grayscale words; their mapping
+ ** to physical LEDs is hardware-specific but follows the linear order of
+ ** the output lines on the hardware. Once the grayscale data is placed in
+ ** the buffer, call tlc_send_gs().
+ **
+ ** Helper functions are provided for manipulating the main parts of the
+ ** function buffer, which controls device settings like display blanking,
+ ** dot-correction multiplier, and global brightness correction. The
+ ** helper functions only manipulate the function data buffer; to commit it
+ ** to the hardware, it must be sent using tlc_send_fun().
+ **
+ ** \file tlc5948a.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2015-2022 George Louthan @duplico. MIT License.
  */
 
 #include "tlc5948a.h"
@@ -12,26 +31,25 @@
 
 #include "badge.h"
 
-/*
- *   LED controller (TLC5948A)
- *   This file's job is to keep the display going. Application logic will go
- *   elsewhere - this is strictly a driver.
- */
-
+/// Flag to the hardware module that the message is grayscale.
 #define TLC_THISISGS    0x00
+/// Flag to the hardware module that the message is function data.
 #define TLC_THISISFUN   0x01
 
-// Current TLC sending state:
+/// Current sending state of the SPI state machine.
 uint8_t tlc_send_type = TLC_SEND_IDLE;
-uint8_t tlc_tx_index = 0;   // Index of currently sending buffer
+/// Index of the currently sending byte in the buffer.
+uint8_t tlc_tx_index = 0;
 
+/// If we are performing a loopback serial test, the data to send.
 uint8_t tlc_loopback_data_out = 0x00;
+/// If we are performing a loopback serial test, the data received so far.
 volatile uint8_t tlc_loopback_data_in = 0x00;
 
+/// Main buffer to hold grayscale data.
 uint16_t tlc_gs_data[16] = { 0x0000, };
 
-// This is the basic set of function data.
-// A few of them can be edited.
+/// The basic set of function data, some of which can be edited.
 uint8_t fun_base[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // ...reserved...
@@ -67,6 +85,7 @@ uint8_t fun_base[] = {
         TLC_DC_BLU, TLC_DC_GRN, TLC_DC_RED,
 };
 
+/// Send our current grayscale buffer to the hardware.
 void tlc_set_gs() {
     while (tlc_send_type != TLC_SEND_IDLE);
     tlc_send_type = TLC_SEND_TYPE_GS;
@@ -74,6 +93,7 @@ void tlc_set_gs() {
     EUSCI_A_SPI_transmitData(EUSCI_A0_BASE, TLC_THISISGS);
 }
 
+/// Send our current function data buffer to the hardware.
 void tlc_set_fun() {
     while (tlc_send_type != TLC_SEND_IDLE);
     tlc_send_type = TLC_SEND_TYPE_FUN;
@@ -81,7 +101,16 @@ void tlc_set_fun() {
     EUSCI_A_SPI_transmitData(EUSCI_A0_BASE, TLC_THISISFUN);
 }
 
-// Stage global brightness if different from default:
+/// Stage global brightness into dot correct if different from default.
+/**
+ ** This is designed to give us a greater range of hardware brightness
+ ** settings. The reason we would want this is that the global
+ ** brightness setting and the dot-correct settings actually adjust the
+ ** constant current of the LEDs. This lets our PWM grayscale action
+ ** look consistent across brightness correction levels. We still
+ ** retain the ability to do per-color dot correction with the
+ ** preprocessor defines that start with TLC_DC_.
+ */
 void tlc_stage_dc_mult(uint8_t mult) {
     for (uint8_t i=0; i<15; i+=3) {
         fun_base[19+i + 0] = TLC_DC_BLU * mult;
@@ -90,7 +119,7 @@ void tlc_stage_dc_mult(uint8_t mult) {
     }
 }
 
-// Stage the blank bit:
+/// Set or unset the blank bit in the function data, but don't send it yet.
 void tlc_stage_blank(uint8_t blank) {
     if (blank) {
         fun_base[17] |= BIT7;
@@ -101,8 +130,7 @@ void tlc_stage_blank(uint8_t blank) {
     }
 }
 
-// Test the TLC chip with a shift-register loopback.
-// Returns 0 for success and 1 for failure.
+/// Test the TLC chip with a shift-register loopback, returning 0 for success.
 uint8_t tlc_test_loopback(uint8_t test_pattern) {
     // Send the test pattern 34 times, and expect to receive it shifted
     // a bit.
@@ -123,13 +151,14 @@ uint8_t tlc_test_loopback(uint8_t test_pattern) {
     return tlc_loopback_data_in != (uint8_t) ((test_pattern << 7) | (test_pattern >> 1));
 }
 
-// Stage global brightness if different from default:
+/// Stage global brightness setting.
 void tlc_stage_bc(uint8_t bc) {
     bc = bc & 0b01111111; // Mask out BLANK just in case.
     fun_base[17] &= 0b10000000;
     fun_base[17] |= bc;
 }
 
+/// Initialize the TLC5948A hardware driver.
 void tlc_init() {
     // We're assuming that the GPIO/peripheral selection has already been configured elsewhere.
     // However, we need to make sure LAT starts out low:
@@ -178,6 +207,7 @@ void tlc_init() {
     TA0CTL = TASSEL__SMCLK|MC_1; // Start it in up mode based on an undivided SMCLK.
 }
 
+/// SPI interrupt service routine for the peripheral connected to the LED driver.
 #pragma vector=USCI_A0_VECTOR
 __interrupt void EUSCI_A0_ISR(void)
 {

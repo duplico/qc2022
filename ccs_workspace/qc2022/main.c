@@ -1,9 +1,21 @@
+/// Queercon 2022 badge low-level main module and entry point.
 /**
- * \brief   2021 Allhallowtide badge main.
- * \brief   Main entry point for 2021 Allhallowtide Party electronic badge.
- * \author  George Louthan <duplico@dupli.co>
- * \date    2021
- * \copyright MIT License.
+ ** The main source module is concerned with the basic setup of the MCU and
+ ** onboard GPIO and peripherals. It also contains the main program loop of
+ ** the entire badge code. Aside from initialization of peripherals and the
+ ** other badge drivers, this module has a core purpose of calling events in
+ ** (primarily) the badge.c module.
+ **
+ ** The basic split in responsibility between the badge.c and main.c modules
+ ** is that main.c detects, prioritizes, and clears flags set from
+ ** interrupts; it then calls the appropriate function in badge.c so that
+ ** badge.c can behave in a more event-driven way, with the underlying MSP430
+ ** hardware and registers abstracted away by main.c for the most part.
+ **
+ ** \file main.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2022 George Louthan @duplico. MIT License.
  */
 
 // MSP430 main header
@@ -27,14 +39,18 @@
 #include "badge.h"
 #include "animations.h"
 
-// Global state
+/// Current button state (1 for pressed, 2 long-pressed, 0 not pressed).
 uint8_t button_state;
 
-// Interrupt flags
+/// Interrupt flag for the system clock tick.
 volatile uint8_t f_time_loop;
+/// Interrupt flag for the button being held for over 1 second.
 volatile uint8_t f_long_press;
+/// Interrupt flag that ticks every second.
 volatile uint8_t f_second;
+/// Interrupt flag from the ADC indicating the badge is hot.
 volatile uint8_t f_hot;
+/// Interrupt flag from the ADC indicating the badge is cold.
 volatile uint8_t f_cold;
 
 /// Perform the TI-recommended software trim of the DCO per TI demo code.
@@ -188,7 +204,6 @@ void init_io() {
     P2REN =     0b00010000;
     P2OUT =     0b00010000;
 
-
     // Init P3 as unused
     P3DIR = 0xFF;
     P3SEL0 = 0x00;
@@ -200,8 +215,8 @@ void init_io() {
     PM5CTL0 &= ~LOCKLPM5;
 }
 
+/// Initialize the ADC for trigger based sampling of onboard temperature.
 void init_adc() {
-    // Configure ADC - Pulse sample mode; ADCSC trigger
     ADCCTL0 |= ADCSHT_8 | ADCON;                                  // ADC ON,temperature sample period>30us
     ADCCTL1 |= ADCSHP;                                            // s/w trig, single ch/conv, MODOSC
     ADCCTL2 |= ADCRES;                                            // 10-bit conversion results
@@ -215,6 +230,7 @@ void init_adc() {
 
 }
 
+/// Callback from CapTIvate for a change in the button state.
 void button_cb(tSensor *pSensor) {
 
     if((pSensor->bSensorTouch == true) && (pSensor->bSensorPrevTouch == false))
@@ -330,10 +346,12 @@ int main(void) {
     } // End background loop
 }
 
-#define CALADC_15V_30C  *((unsigned int *)0x1A1A)                 // Temperature Sensor Calibration-30 C
-                                                                  // See device datasheet for TLV table memory mapping
-#define CALADC_15V_85C  *((unsigned int *)0x1A1C)                 // Temperature Sensor Calibration-85 C
+/// Pointer to 30 degC temperature sensor calibration, per datasheet.
+#define CALADC_15V_30C  *((unsigned int *)0x1A1A)
+/// Pointer to 85 degC temperature sensor calibration, per datasheet.
+#define CALADC_15V_85C  *((unsigned int *)0x1A1C)
 
+/// ADC interrupt service routine.
 #pragma vector=ADC_VECTOR
 __interrupt void ADC_ISR(void)
 {

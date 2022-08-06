@@ -1,8 +1,17 @@
-/*
- * serial.c
- *
- *  Created on: Jul 17, 2022
- *      Author: george
+/// Serial communication module for the arm contacts.
+/**
+ ** The serial system involves a PHY layer and a link-layer.
+ ** The PHY layer operates based on interrupts to decode individual
+ ** messages. Once a message is received, a flag is raised to the
+ ** main module, the CPU is woken, and link-layer functions are called
+ ** on an event basis. These also include time-based functions such as
+ ** timeoutes, and the assertion or deassertion of the badge-detect line,
+ ** also called o_hai.
+ **
+ ** \file serial.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2022 George Louthan @duplico. MIT License.
  */
 
 #include <stdint.h>
@@ -14,17 +23,17 @@
 #include "rtc.h"
 #include "serial.h"
 
-volatile serial_message_t serial_message_in; // Needs no initialization.
-serial_message_t serial_message_out; // Needs no initialization.
-volatile uint8_t serial_phy_state_rx; // 0-init is fine.
-volatile uint8_t serial_phy_state_tx; // 0-init is fine.
-volatile uint8_t serial_phy_index_rx; // Initialized in ISR.
-volatile uint8_t serial_phy_index_tx; // Initialized in ISR.
+volatile serial_message_t serial_message_in;
+serial_message_t serial_message_out;
+volatile uint8_t serial_phy_state_rx;
+volatile uint8_t serial_phy_state_tx;
+volatile uint8_t serial_phy_index_rx;
+volatile uint8_t serial_phy_index_tx;
 
 volatile uint8_t f_serial_phy = 0;
 
-uint8_t serial_plugged = 0; // initialized in code
-uint16_t serial_ll_timeout_ticks; // initialized in code
+uint8_t serial_plugged = 0;
+uint16_t serial_ll_timeout_ticks;
 
 uint8_t serial_ll_tx_seq = 0;
 uint32_t serial_ll_rx_seq = 0;
@@ -45,19 +54,7 @@ uint16_t crc16_buf(volatile uint8_t *sbuf, uint8_t len) {
     return crc;
 }
 
-uint16_t crc_build(uint8_t data, uint8_t start_over) {
-    static uint16_t crc = CRC_SEED;
-    if (start_over) {
-        crc = CRC_SEED;
-    }
-    crc=(uint8_t)(crc >> 8) | (crc << 8);
-    crc^=data;
-    crc^=(uint8_t)(crc & 0xff) >> 4;
-    crc^=(crc << 8) << 4;
-    crc^=((crc & 0xff) << 4) << 1;
-    return crc;
-}
-
+/// Calculate and populate a CRC16 to a serial message.
 void crc16_apply(serial_message_t *message) {
     message->crc16 = crc16_buf(
         (uint8_t *) message,
@@ -65,6 +62,7 @@ void crc16_apply(serial_message_t *message) {
     );
 }
 
+/// Validate a serial message.
 uint8_t validate_message(serial_message_t *message) {
     // Check CRC.
     if (crc16_buf((uint8_t *) message,
@@ -128,6 +126,7 @@ void serial_send_start(uint8_t opcode) {
     // The interrupts will take it from here.
 }
 
+/// Link-layer serial receive event, called after validating the received message.
 void serial_ll_handle_rx() {
     // NB: All structural and opcode-specific (but not state-specific)
     //     validation has already been done. Any ACK has already been
@@ -179,6 +178,7 @@ void serial_ll_handle_rx() {
     }
 }
 
+/// Called when a link-layer timeout has passed without being reset.
 void serial_ll_timeout() {
     if (serial_plugged) {
         serial_send_start(SERIAL_OPCODE_HELO);
@@ -204,6 +204,7 @@ void serial_phy_disconnect() {
     serial_plugged = 0;
 }
 
+/// The event for receiving a complete but not yet validated serial message.
 void serial_phy_handle_rx() {
     // We just got a complete serial message. Validate it.
     if (!validate_message((serial_message_t *) &serial_message_in)) {
@@ -214,7 +215,7 @@ void serial_phy_handle_rx() {
     serial_ll_handle_rx();
 }
 
-/// Call this every system tick
+/// Call this every system tick to service time-based actions.
 void serial_tick() {
     // First, debounce the connection detection.
     static uint8_t ohai_last = 1;
@@ -243,6 +244,7 @@ void serial_tick() {
     }
 }
 
+/// Initialize the serial module.
 void serial_init() {
     // We'll be using UCA1 here.
 
@@ -274,6 +276,7 @@ void serial_init() {
     UCA1IE |= UCTXIE | UCRXIE;
 }
 
+/// Interrupt service routine for receiving or sending a byte over the serial UART.
 #pragma vector=USCI_A1_VECTOR
 __interrupt void serial_isr() {
     switch(__even_in_range(UCA1IV, USCI_UART_UCTXIFG)) {
@@ -293,7 +296,7 @@ __interrupt void serial_isr() {
             if (serial_phy_index_rx == sizeof(serial_message_in)) {
                 // Message completely received.
                 serial_phy_state_rx = SERIAL_PHY_STATE_IDLE;
-                f_serial_phy = SERIAL_RX_DONE;
+                f_serial_phy = 1;
                 LPM0_EXIT;
             }
             break; // case SERIAL_PHY_STATE_RX

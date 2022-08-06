@@ -1,8 +1,30 @@
-/*
- * leds.c
- *
- *  Created on: Oct 17, 2019
- *      Author: george
+/// High-level animation driver for the Queercon 2022 badge.
+/**
+ ** Unlike the low-level TLC5948A driver, this is a mostly hardware-agnostic
+ ** driver for displaying LED animations. It assumes some number of RGB LEDs
+ ** and supports ambient looping background animations, interrupting
+ ** non-ambient animations, a configurable queueing length for playing multiple
+ ** non-ambient animations in sequence, temporary looping of non-ambient
+ ** animations, and two speeds of "twinkle" overlay.
+ **
+ ** Animations are specified in generated `animations.c` source file and
+ ** `animations.h` header file. They are generated from a set of basic
+ ** animation specifications interpreted by a Python script.
+ **
+ ** It also has two very specific QC2022 special cases:
+ **
+ ** The first is a badges seen counter, which detects when the animation
+ ** `ANIM_META_CONNECTS` is being played and sets the ending frame correctly
+ ** based on the number of badges this badge has connected to.
+ **
+ ** The second is a special case ambient animation called `U00`, which shows
+ ** a binary counter using all the LEDs, whose value persists across plays of
+ ** other animations, but not a power cycle.
+ **
+ ** \file leds.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2015-2022 George Louthan @duplico. MIT License.
  */
 
 #include <stdint.h>
@@ -17,10 +39,15 @@
 #include "leds.h"
 #include "animations.h"
 
+/// Number of RGB LEDs to shift the color channels when writing the GS buffer.
 #define LED_OFFSET 1
+/// Number of single channels to shift when writing the GS buffer.
 #define RGB_OFFSET 1
+/// Select the order of the red channels within the RGB LEDs.
 #define RED_OFFSET 2
+/// Select the order of the green channels within the RGB LEDs.
 #define GRN_OFFSET 1
+/// Select the order of the blue channels within the RGB LEDs.
 #define BLU_OFFSET 0
 
 // With our offset configuration, LED index 0 is the top one,
@@ -53,29 +80,48 @@ rgbdelta_t leds_colors_step[LED_COUNT] = {
         {0, 0, 0},
 };
 
-uint8_t leds_anim_queue_ids[LEDS_QUEUE_MAXLEN]; // Initialized in code.
-uint8_t leds_anim_queue_loops[LEDS_QUEUE_MAXLEN]; // Initialized in code.
+/// Queue of animation IDs to play after the current animation.
+uint8_t leds_anim_queue_ids[LEDS_QUEUE_MAXLEN]; // Initialize to LEDS_ID_NO_ANIM.
+/// Loop counts of currently queued animations.
+uint8_t leds_anim_queue_loops[LEDS_QUEUE_MAXLEN];
 
 /// Does the display need re-sent to the LED driver?
 uint8_t leds_dirty = 1;
 
+/// Is the LED system playing anything right now?
 uint8_t led_animation_state = 0;
 
+/// QC2022: The running binary counter for the U00 animation.
 uint16_t leds_anim_frame_quaternary_saved;
+/// The current frame number in the current animation.
 uint16_t leds_anim_frame;
+/// The current animation ID, if known.
 uint8_t leds_anim_id;
+/// The ID of the configured ambient animation.
 uint8_t leds_ambient_anim_id;
+/// Whether the LEDs are displaying an ambient animation.
 uint8_t leds_is_ambient = 1;
+/// The number of lops remaining.
 uint8_t leds_anim_looping;
+/// The length of the current animation.
 uint16_t leds_anim_length;
+/// Whether to force the LEDs to twinkle regardless of animation setting.
 uint8_t leds_force_twinkle;
+/// Number of steps to hold the current frame before beginning to fade.
 uint16_t leds_hold_steps;
+/// Number of system ticks that have elapsed while holding the current frame.
 uint16_t leds_hold_index;
+/// Number of intermediate fading steps between this frame and the next.
 uint16_t leds_transition_steps;
+/// Number of system ticks elapsed while fading to the next frame.
 uint16_t leds_transition_index;
+
+/// Pointer to the current animation.
 const leds_animation_t *leds_current_anim;
 
+/// Bitmask to use for dimming or brightening LEDs for the twinkle effect.
 uint8_t leds_twinkle_bits = 0xea;
+/// System tick counter used only for twinkling.
 uint16_t leds_anim_adjustment_index = 0;
 
 /// Start a new frame, setting up current, source, dest, and step.
@@ -95,8 +141,8 @@ void leds_load_colors() {
 
             // Override the hold time and fade time to match the last visible frame
             //  in the animation.
-            leds_hold_steps = leds_current_anim->durations[leds_current_anim->len-1] / TICKS_PER_LED_ANIM_DUR;
-            leds_transition_steps =  leds_current_anim->fade_durs[leds_current_anim->len-1] / TICKS_PER_LED_ANIM_DUR;
+            leds_hold_steps = leds_current_anim->durations[leds_current_anim->len-1] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
+            leds_transition_steps =  leds_current_anim->fade_durs[leds_current_anim->len-1] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
 
             // Also, twinkle it.
             leds_force_twinkle = 1;
@@ -188,19 +234,20 @@ void leds_set_gs(const rgbcolor16_t* colors) {
     }
 }
 
+/// Set up the hold and transition steps for the current frame, and load the colors.
 void leds_set_steps_and_go() {
     if (leds_current_anim == all_anims[ANIM_U00]) {
         // Super special case.
-        leds_hold_steps = leds_current_anim->durations[0] / TICKS_PER_LED_ANIM_DUR;
+        leds_hold_steps = leds_current_anim->durations[0] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
         leds_hold_index = 0;
-        leds_transition_steps = leds_current_anim->fade_durs[0] / TICKS_PER_LED_ANIM_DUR;
+        leds_transition_steps = leds_current_anim->fade_durs[0] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
         leds_transition_index = 0;
         leds_anim_frame_quaternary_saved = leds_anim_frame;
         return;
     }
-    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
+    leds_hold_steps = leds_current_anim->durations[leds_anim_frame] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
     leds_hold_index = 0;
-    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / TICKS_PER_LED_ANIM_DUR;
+    leds_transition_steps = leds_current_anim->fade_durs[leds_anim_frame] / ANIM_DUR_UNIT_PER_SYSTEM_TICK;
     leds_transition_index = 0;
 
     leds_load_colors();
@@ -321,9 +368,9 @@ void leds_timestep() {
     if (leds_force_twinkle || leds_current_anim->anim_type != ANIM_TYPE_SOLID) {
         uint16_t target_index;
         if (leds_force_twinkle || leds_current_anim->anim_type == ANIM_TYPE_FASTTWINKLE)
-            target_index = LEDS_TWINKLE_STEPS_FAST/TICKS_PER_LED_ANIM_DUR;
+            target_index = LEDS_TWINKLE_STEPS_FAST/ANIM_DUR_UNIT_PER_SYSTEM_TICK;
         else
-            target_index = LEDS_TWINKLE_STEPS_SLOW/TICKS_PER_LED_ANIM_DUR;
+            target_index = LEDS_TWINKLE_STEPS_SLOW/ANIM_DUR_UNIT_PER_SYSTEM_TICK;
 
         if (leds_anim_adjustment_index == target_index) {
             leds_twinkle_bits = rand() % 256;

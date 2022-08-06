@@ -1,8 +1,30 @@
-/*
- * rtc.c
- *
- *  Created on: Jul 17, 2022
- *      Author: george
+/// Real-time clock configuration and events module.
+/**
+ ** This module operates a real-time clock, sourced from the 8-MHz MCLK.
+ ** It works about medium well, precision-wise. But that's fine, because it
+ ** only has to last a weekend! (unofficial #badgelife motto).
+ **
+ ** Basically, the RTC generates the main system tick, which is every 10 ms,
+ ** or 100 times per second. That centisecond (csec) system tick is then
+ ** used to create another, once per second tick, used to keep track of time.
+ ** The system seconds timer is calibrated to measure the seconds since noon
+ ** on Wednesday, Las Vegas time. Therefore, here are some real example times:
+ **
+ ** Seconds  |  Real time
+ ** ------:  |  :--------
+ ** 0        |  Noon Wednesday
+ ** 43200    |  Midnight Thursday morning
+ ** 86400    |  Noon Thursday
+ ** 129600   |  Midnight Friday morning
+ ** 172800   |  Noon Friday
+ ** 212400   |  11pm Friday (party!)
+ ** 216000   |  Midnight Saturday morning
+ ** 302400   |  Midnight Monday morning
+ **
+ ** \file rtc.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2022 George Louthan @duplico. MIT License.
  */
 
 #include <stdint.h>
@@ -11,15 +33,17 @@
 
 #include "badge.h"
 
-extern uint8_t button_state;
+/// The number of system ticks the button has been held down so far.
 uint8_t rtc_button_csecs = 0;
+/// System ticks this second, which wraps from 100 to 1.
 volatile uint8_t rtc_centiseconds = 0;
+/// Number of seconds so far; persisted in `badge_conf.clock`.
 volatile uint32_t rtc_seconds = 0;
 
 /// Initialize the on-board real-time clock to tick 100 times per second.
 /**
  ** This sources the RTC from SMCLK (8 MHz) divided by 1000 (8 kHz),
- ** and setting the modulo to 80, so that the RTC will tick 100x
+ ** setting the modulo to 80, so that the RTC will tick 100x
  ** per second.
  */
 void rtc_init() {
@@ -37,19 +61,7 @@ void rtc_init() {
              RTCIE;             // Enable interrupt.
 }
 
-// The clock is measured in seconds since noon Vegas time on Wednesday.
-// So, here are some example times:
-//  Seconds     Real time
-//  -------     ---------
-//  0           Noon Wednesday
-//  43200       Midnight Thursday morning
-//  86400       Noon Thursday
-//  129600      Midnight Friday morning
-//  172800      Noon Friday
-//  212400      11pm Friday (party!)
-//  216000      Midnight Saturday morning
-//  302400      Midnight Monday morning
-
+/// RTC overflow interrupt service routine.
 #pragma vector=RTC_VECTOR
 __interrupt void RTC_ISR(void) {
     // Called when the RTC overflows (100 times per second)
