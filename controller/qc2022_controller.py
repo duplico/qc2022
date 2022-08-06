@@ -14,7 +14,7 @@ SERIAL_OPCODE_STATQ = 0x0D
 
 MESSAGE_FMT = '<HBBIIH'
 MESSAGE_FMT_NOCRC = '<HBBII'
-SerialHeader = namedtuple('Message', 'from_id opcode clock_is_set last_clock payload crc16')
+SerialMessage = namedtuple('Message', 'from_id opcode clock_is_set last_clock payload crc16')
 CRC_FMT = '<H'
 
 def crc16_buf(sbuf):
@@ -29,42 +29,28 @@ def crc16_buf(sbuf):
 
     return crc
 
-# def validate_message(msg):
-#     if len(msg) < 11:
-#         raise TimeoutError("No response from badge.")
-#     if (msg[0] != 0xAC):
-#         raise ValueError("Bad sync byte received.")
-#     if crc16_buf(msg[1:-2]) != struct.unpack(CRC_FMT, msg[-2:])[0]:
-#         print(crc16_buf(msg[1:-2]))
-#         print(struct.unpack(CRC_FMT, msg[-2:]))
-#         print(msg)
-#         raise ValueError("Bad CRC from badge.")
+def validate_message(msg):
+    if len(msg) < 15:
+        raise TimeoutError("No response from badge.")
+    if (msg[0] != 0xAC):
+        raise ValueError("Bad sync byte received.")
+    if crc16_buf(msg[1:-2]) != struct.unpack(CRC_FMT, msg[-2:])[0]:
+        print(crc16_buf(msg[1:-2]))
+        print(struct.unpack(CRC_FMT, msg[-2:]))
+        print(msg)
+        raise ValueError("Bad CRC from badge.")
 
-# def await_serial(ser, opcode=None):
-#     resp = ser.read(11)
-#     validate_message(resp)
-#     msg = SerialHeader._make(struct.unpack(HEADER_FMT, resp[1:]))
-#     if opcode and msg.opcode != opcode:
-#         raise ValueError("Unexpected opcode received: %d" % msg.opcode)
-#     return msg
+def await_serial(ser, opcode=None):
+    resp = ser.read(14+1)
+    validate_message(resp)
+    msg = SerialMessage._make(struct.unpack(MESSAGE_FMT, resp[1:]))
+    if opcode and msg.opcode != opcode:
+        raise ValueError("Unexpected opcode received: %d" % msg.opcode)
+    return msg
 
-# def await_serial(ser, opcode=None):
-#     resp = ser.read(11)
-#     validate_message(resp)
-#     msg = SerialHeader._make(struct.unpack(HEADER_FMT, resp[1:]))
-#     if opcode and msg.opcode != opcode:
-#         raise ValueError("Unexpected opcode received: %d" % msg.opcode)
-#     if msg.payload_len:
-#         payload = ser.read(msg.payload_len)
-#         if len(payload) != msg.payload_len:
-#             raise TimeoutError()
-#         # TODO: payload_struct
-#         return msg, payload
-#     return msg, None
-
-# def await_ack(ser):
-#     header, payload = await_serial(ser, opcode=SERIAL_OPCODE_ACK)
-#     return header.from_id
+def await_ack(ser, payload=None):
+    msg = await_serial(ser, opcode=SERIAL_OPCODE_ACK)
+    return msg.payload
 
 def time_seconds():
     return 0
@@ -81,20 +67,23 @@ def serial_obj(port):
 @click.command()
 @click.argument('port')
 def set_time(port):
-    # TODO: Send a HELO with the time
+    # TODO: Send a HELO or something with the time
     pass
 
 @click.command()
 @click.argument('port')
 @click.argument('id', type=int)
 def set_id(port, id):
+    ser = serial_obj(port)
     send_message(
-        serial_obj(port),
+        ser,
         SERIAL_OPCODE_SETID,
         payload=id
     )
-    # TODO: await ACK with payload of ID
-    pass
+    id_set = await_ack(ser)
+    if (id_set != id):
+        raise ValueError("Failed to set ID")
+    print("ID set to %d" % id_set)
 
 @click.command()
 @click.argument('port')
