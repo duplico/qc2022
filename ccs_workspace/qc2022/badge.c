@@ -46,6 +46,9 @@ uint8_t badge_clock_authority = 0; // Intentionally clears on power cycle.
 /// Whether the next bling anomation should be skipped.
 uint8_t badge_bling_button_pressed = 1; // Skip the first bling after startup.
 
+/// The global badge brightness level.
+uint8_t badge_brightness_level;
+
 /// Returns whether an animation with the selected id is unlocked.
 uint8_t anim_unlocked(uint8_t id) {
     if (id < ANIM_H00) {
@@ -331,19 +334,18 @@ void badge_temp_unlock(uint8_t hot) {
 void badge_button_press_long() {
     badge_bling_button_pressed = 1;
 
-    static uint8_t brightness_level = 0;
     uint8_t brightness_levels[3] = {
         0,
         64,
         255
     };
 
-    brightness_level = (brightness_level+1) % 3;
-    tlc_stage_bc(brightness_levels[brightness_level]);
-    tlc_stage_dc_mult(brightness_level+1);
+    badge_brightness_level = (badge_brightness_level+1) % 3;
+    tlc_stage_bc(brightness_levels[badge_brightness_level]);
+    tlc_stage_dc_mult(badge_brightness_level+1);
     tlc_set_fun();
 
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + brightness_level, 1, 0, 1);
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS0 + badge_brightness_level, 1, 0, 1);
 }
 
 /// Callback for a short button press.

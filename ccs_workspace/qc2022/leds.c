@@ -124,13 +124,15 @@ uint8_t leds_twinkle_bits = 0xea;
 /// System tick counter used only for twinkling.
 uint16_t leds_anim_adjustment_index = 0;
 
+#define BRIGHTNESS_SHIFT (6 + badge_brightness_level)
+
 /// Start a new frame, setting up current, source, dest, and step.
 void leds_load_colors() {
     // Stage in the current color:
     for (uint8_t i=0; i<LED_COUNT; i++) {
-        leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red << 8;
-        leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green << 8;
-        leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue << 8;
+        leds_colors_curr[i].red = leds_current_anim->colors[leds_anim_frame][i].red << BRIGHTNESS_SHIFT;
+        leds_colors_curr[i].green = leds_current_anim->colors[leds_anim_frame][i].green << BRIGHTNESS_SHIFT;
+        leds_colors_curr[i].blue = leds_current_anim->colors[leds_anim_frame][i].blue << BRIGHTNESS_SHIFT;
 
         // Stage in the next color. There's a few options here to pick the next frame to
         //  fade to.
@@ -155,20 +157,20 @@ void leds_load_colors() {
             // The base case is that this is not the end of the animation; or, that we're
             //  ambient or otherwise still looping
             uint8_t next_id = (leds_anim_frame+1) % leds_current_anim->len;
-            leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red << 8;
-            leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green << 8;
-            leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue << 8;
+            leds_colors_next[i].red = leds_current_anim->colors[next_id][i].red << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].green = leds_current_anim->colors[next_id][i].green << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].blue = leds_current_anim->colors[next_id][i].blue << BRIGHTNESS_SHIFT;
         } else if (leds_anim_queue_ids[0] != LEDS_ID_NO_ANIM) {
             // Or, we could be about to transition to the next non-ambient animation
             //  in the queue.
-            leds_colors_next[i].red = all_anims[leds_anim_queue_ids[0]]->colors[0][i].red << 8;
-            leds_colors_next[i].green = all_anims[leds_anim_queue_ids[0]]->colors[0][i].green << 8;
-            leds_colors_next[i].blue = all_anims[leds_anim_queue_ids[0]]->colors[0][i].blue << 8;
+            leds_colors_next[i].red = all_anims[leds_anim_queue_ids[0]]->colors[0][i].red << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].green = all_anims[leds_anim_queue_ids[0]]->colors[0][i].green << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].blue = all_anims[leds_anim_queue_ids[0]]->colors[0][i].blue << BRIGHTNESS_SHIFT;
         } else {
             // Or, we're going back to ambient after this.
-            leds_colors_next[i].red = all_anims[leds_ambient_anim_id]->colors[0][i].red << 8;
-            leds_colors_next[i].green = all_anims[leds_ambient_anim_id]->colors[0][i].green << 8;
-            leds_colors_next[i].blue = all_anims[leds_ambient_anim_id]->colors[0][i].blue << 8;
+            leds_colors_next[i].red = all_anims[leds_ambient_anim_id]->colors[0][i].red << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].green = all_anims[leds_ambient_anim_id]->colors[0][i].green << BRIGHTNESS_SHIFT;
+            leds_colors_next[i].blue = all_anims[leds_ambient_anim_id]->colors[0][i].blue << BRIGHTNESS_SHIFT;
         }
 
         leds_colors_step[i].red = ((int_fast32_t) leds_colors_next[i].red - leds_colors_curr[i].red) / leds_transition_steps;
@@ -207,9 +209,9 @@ void leds_set_gs(const rgbcolor16_t* colors) {
     {
         if (leds_current_anim == all_anims[ANIM_U00]) {
             // If this is the quaternary counter animation, do something special.
-            r = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 0))) ? 35000 : 0;
-            g = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 1))) ? 35000 : 0;
-            b = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 2))) ? 35000 : 0;
+            r = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 0))) ? 255 << BRIGHTNESS_SHIFT : 0;
+            g = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 1))) ? 255 << BRIGHTNESS_SHIFT : 0;
+            b = (leds_anim_frame & (BIT0 << (stoplight_index*3 + 2))) ? 255 << BRIGHTNESS_SHIFT : 0;
         } else {
             r = colors[stoplight_index].red;
             g = colors[stoplight_index].green;
