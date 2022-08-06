@@ -252,6 +252,9 @@ void badge_set_seen(uint8_t id) {
     }
 
     if (new_anim_id != LEDS_ID_NO_ANIM) {
+        fram_unlock();
+        badge_conf.current_anim_id = new_anim_id;
+        fram_lock();
         leds_start_anim_by_id(new_anim_id, 0, 1, 0);
     }
 
@@ -290,6 +293,9 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
     //  is unlocked, go ahead and show it.
     if (badge_conf.clock < BADGE_UNLOCK_SECS_S02 && clock >= BADGE_UNLOCK_SECS_S02) {
         leds_start_anim_by_id(ANIM_S02, 0, 1, 0);
+        fram_unlock();
+        badge_conf.current_anim_id = ANIM_S02;
+        fram_lock();
     }
 
     fram_unlock();
@@ -310,11 +316,13 @@ void badge_temp_unlock(uint8_t hot) {
         leds_start_anim_by_id(ANIM_S00, 0, 1, 0);
         fram_unlock();
         badge_conf.heat_unlocked = 1;
+        badge_conf.current_anim_id = ANIM_S00;
         fram_lock();
     } else {
         leds_start_anim_by_id(ANIM_S01, 0, 1, 0);
         fram_unlock();
         badge_conf.cold_unlocked = 1;
+        badge_conf.current_anim_id = ANIM_S01;
         fram_lock();
     }
 }
