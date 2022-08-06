@@ -1,8 +1,23 @@
-/*
- * badge.c
- *
- *  Created on: Jul 18, 2022
- *      Author: george
+/// Queercon 2022 badge primary high-level event-driven driver.
+/**
+ ** The badge source module controls the high-level behavior of the badge
+ ** application. It handles the persistent configuration, any decisions
+ ** about animation unlocking, connection tracking, button behavior, and when
+ ** to do the random "bling" animations.
+ **
+ ** The main control loop is based in the lower-level main.c module, which
+ ** calls the functions in badge.c from the appropriate context.
+ **
+ ** The basic split in responsibility between the badge.c and main.c modules
+ ** is that main.c detects, prioritizes, and clears flags set from
+ ** interrupts; it then calls the appropriate function in badge.c so that
+ ** badge.c can behave in a more event-driven way, with the underlying MSP430
+ ** hardware and registers abstracted away by main.c for the most part.
+ **
+ ** \file badge.c
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2022 George Louthan @duplico. MIT License.
  */
 
 #include <stdint.h>
@@ -16,9 +31,9 @@
 #include "tlc5948a.h"
 
 #pragma PERSISTENT(badge_conf)
+/// The main persistent badge configuration.
 badge_conf_t badge_conf = (badge_conf_t){
     .badge_id = BADGE_ID_UNASSIGNED,
-    .initialized = 0,
     .badges_seen = {0,},
     .current_anim_id = ANIM_H00,
     .badges_seen_count = 1, // I've seen myself.
@@ -26,7 +41,7 @@ badge_conf_t badge_conf = (badge_conf_t){
 };
 
 /// Whether this badge thinks it has an authoritative clock.
-uint8_t badge_clock_authority = 0;
+uint8_t badge_clock_authority = 0; // Intentionally clears on power cycle.
 
 /// Whether the next bling anomation should be skipped.
 uint8_t badge_bling_button_pressed = 1; // Skip the first bling after startup.
@@ -248,18 +263,23 @@ void badge_set_seen(uint8_t id) {
 void badge_set_id(uint8_t id) {
     uint8_t old_id = badge_conf.badge_id;
 
-    fram_unlock();
-    badge_conf.badge_id = id;
-    set_id_buf(old_id, 0, badge_conf.badges_seen);
-    set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
-    if (!is_uber(old_id) && is_uber(id)) {
-        badge_conf.ubers_seen_count++;
-    } else if (is_uber(old_id) && !is_uber(id)) {
-        badge_conf.ubers_seen_count--;
-    }
-    fram_lock();
+    if (id != badge_conf.badge_id) {
+        fram_unlock();
+        badge_conf.badge_id = id;
+        set_id_buf(old_id, 0, badge_conf.badges_seen);
+        set_id_buf(badge_conf.badge_id, 1, badge_conf.badges_seen);
+        if (!is_uber(old_id) && is_uber(id)) {
+            badge_conf.ubers_seen_count++;
+        } else if (is_uber(old_id) && !is_uber(id)) {
+            badge_conf.ubers_seen_count--;
+        }
+        fram_lock();
 
-    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 0, 0, 1);
+        // Re-seed PRNG.
+        srand(badge_conf.badge_id);
+    }
+
+    leds_start_anim_by_id(ANIM_META_Z_BRIGHTNESS1, 5, 0, 1);
 }
 
 /// Set the current time.
@@ -349,14 +369,9 @@ uint8_t badge_count_lights() {
     return 1 + badge_conf.badges_seen_count/BADGES_SEEN_PER_DISP;
 }
 
-/// Initialize the badge.
+/// Initialize the badge application behavior.
 void badge_init() {
-    if (badge_conf.initialized) {
-        // We've had a config set before. Just check some things.
-    } else {
-        // This is our first time turning on.
-    }
-
+    // Different PRNG seed per badge.
     srand(badge_conf.badge_id);
 
     leds_start_anim_by_id(ANIM_META_STARTUP_FADE, 0, 0, 1);

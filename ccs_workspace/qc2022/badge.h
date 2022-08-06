@@ -1,8 +1,12 @@
-/*
- * badge.h
- *
- *  Created on: Jun 26, 2022
- *      Author: george
+/// Queercon 2022 main badge header file.
+/**
+ ** This header contains the core configuration and functionality declarations
+ ** and definitions for the Queercon 2022 badge.
+ **
+ ** \file badge.h
+ ** \author George Louthan
+ ** \date   2022
+ ** \copyright (c) 2022 George Louthan @duplico. MIT License.
  */
 
 #ifndef BADGE_H_
@@ -97,7 +101,6 @@
 /// Default global brightness correct for LEDs.
 #define TLC_BC 0x00 // 25%
 
-
 // System values, not really config.
 
 /// Number of bytes in the bitfield of all badge IDs.
@@ -107,8 +110,6 @@
 typedef struct {
     /// The badge's ID, between CBADGE_ID_START and CBADGE_ID_MAX_UNASSIGNED
     uint16_t badge_id;
-    /// Whether the badge has a config created for it.
-    uint8_t initialized;
     /// This badge's time clock, in seconds since Wednesday at noon Vegas time.
     uint32_t clock;
     /// Bitfield tracking badge IDs seen.
