@@ -52,7 +52,7 @@ def await_serial(ser, opcode=None):
 
 def await_ack(ser, payload=None):
     msg = await_serial(ser, opcode=SERIAL_OPCODE_ACK)
-    return msg.payload
+    return msg
 
 def time_seconds():
     # TODO:
@@ -65,7 +65,7 @@ def send_message(ser, opcode, payload=0x00000000, src_id=CONTROLLER_ID):
     ser.write(msg)
 
 def serial_obj(port):
-    return serial.Serial(port, 230400, parity=serial.PARITY_NONE)
+    return serial.Serial(port, 230400, parity=serial.PARITY_NONE, timeout=1)
 
 @click.command()
 @click.argument('seconds', type=int)
