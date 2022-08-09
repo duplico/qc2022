@@ -32,7 +32,7 @@
 
 #pragma PERSISTENT(badge_conf)
 /// The main persistent badge configuration.
-badge_conf_t badge_conf = (badge_conf_t){
+volatile badge_conf_t badge_conf = (badge_conf_t){
     .badge_id = BADGE_ID_UNASSIGNED,
     .badges_seen = {0,},
     .current_anim_id = ANIM_H00,
@@ -114,13 +114,13 @@ uint8_t anim_unlocked(uint8_t id) {
 }
 
 /// Prepare to write to FRAM by disabling interrupts and unlocking write access to INFOA.
-inline void fram_unlock() {
+inline volatile void fram_unlock() {
     __bic_SR_register(GIE);
     SYSCFG0 = FRWPPW | PFWP;
 }
 
 /// Finish writing to FRAM by locking write access to INFOA and enabling interrupts.
-inline void fram_lock() {
+inline volatile void fram_lock() {
     SYSCFG0 = FRWPPW | DFWP | PFWP;
     __bis_SR_register(GIE);
 }
@@ -315,13 +315,13 @@ inline void badge_set_time(uint32_t clock, uint8_t authority) {
 
 /// Callback for its being very hot or very cold for the first time.
 void badge_temp_unlock(uint8_t hot) {
-    if (hot) {
+    if (hot && !badge_conf.heat_unlocked) {
         leds_start_anim_by_id(ANIM_S00, 0, 1, 0);
         fram_unlock();
         badge_conf.heat_unlocked = 1;
         badge_conf.current_anim_id = ANIM_S00;
         fram_lock();
-    } else {
+    } else if (!hot && !badge_conf.cold_unlocked) {
         leds_start_anim_by_id(ANIM_S01, 0, 1, 0);
         fram_unlock();
         badge_conf.cold_unlocked = 1;
