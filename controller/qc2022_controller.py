@@ -81,9 +81,9 @@ def set_id(id):
         SERIAL_OPCODE_SETID,
         payload=id
     )
-    id_set = await_ack(ser)
+    id_set = await_ack(ser).from_id
     if (id_set != id):
-        raise ValueError("Failed to set ID")
+        raise ValueError("Failed to set ID %d; got %d instead." % (id, id_set))
     print("ID set to %d" % id_set)
 
 @click.command()
