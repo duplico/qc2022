@@ -1,5 +1,6 @@
 import struct
 from collections import namedtuple
+from datetime import datetime, timezone, timedelta
 
 import serial
 import click
@@ -55,11 +56,16 @@ def await_ack(ser, payload=None):
     return msg
 
 def time_seconds():
-    # TODO:
-    return 0
+    time_curr = datetime.now()
+    time_start = datetime(2022, 8, 10, 12, 0, 0, 0)
+    time_since = (time_curr - time_start).total_seconds()
+    if time_since < 0:
+        return 0
+    else:
+        return time_since
 
-def send_message(ser, opcode, payload=0x00000000, src_id=CONTROLLER_ID):
-    msg = struct.pack(MESSAGE_FMT_NOCRC, src_id, opcode, 1, time_seconds(), payload)
+def send_message(ser, opcode, payload=0x00000000, src_id=CONTROLLER_ID, time_secs=None):
+    msg = struct.pack(MESSAGE_FMT_NOCRC, src_id, opcode, 1, time_secs if time_secs != None else time_seconds(), payload)
     msg += struct.pack(CRC_FMT, crc16_buf(msg))
     ser.write(b'\xAC') # SYNC byte
     ser.write(msg)
@@ -70,8 +76,12 @@ def serial_obj(port):
 @click.command()
 @click.argument('seconds', type=int)
 def set_time(seconds):
-    # TODO: Send a STATQ with the time
-    pass
+    send_message(
+        ser,
+        SERIAL_OPCODE_STATQ,
+    )
+    stat_dump = await_ack(ser)
+    print(stat_dump)
 
 @click.command()
 @click.argument('id', type=int)
@@ -91,6 +101,7 @@ def statq():
     send_message(
         ser,
         SERIAL_OPCODE_STATQ,
+        time_secs=time_secs
     )
     stat_dump = await_ack(ser)
     # TODO: Decode stat_dump
